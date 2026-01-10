@@ -89,14 +89,16 @@ RowLayout {
                 if (parts.length === 2) {
                     hasBattery = true
                     batteryPercent = parseInt(parts[0]) || 0
-                    isCharging = parts[1].toLowerCase().includes("charg")
+                    // Only show charging if actually charging, not "Not charging" or "Full"
+                    let status = parts[1].toLowerCase()
+                    isCharging = status === "charging"
                 }
             }
         }
     }
 
     Timer {
-        interval: 10000  // Update every 10 seconds
+        interval: 30000  // Update every 30 seconds (power saving)
         running: true
         repeat: true
         onTriggered: batteryChecker.running = true

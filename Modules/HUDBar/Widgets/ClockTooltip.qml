@@ -41,7 +41,7 @@ WlrLayershell {
     }
 
     implicitWidth: 220
-    implicitHeight: 120
+    implicitHeight: 90
 
     color: "transparent"
 
@@ -79,27 +79,15 @@ WlrLayershell {
                 horizontalAlignment: Text.AlignHCenter
             }
 
-            // Divider
-            Rectangle {
-                width: parent.width
-                height: 1
-                color: Colors.bg2
-            }
-
-            // Time with seconds
-            Text {
-                text: Qt.formatDateTime(tooltip.currentDate, "HH:mm:ss")
-                color: Colors.fg1
-                font.pixelSize: 20
-                font.family: "Cantarell"
-                font.weight: Font.Bold
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-            }
-
             // Week number
             Text {
-                text: "Week " + Qt.formatDateTime(tooltip.currentDate, "ww")
+                text: {
+                    // Calculate ISO week number
+                    let date = new Date(tooltip.currentDate)
+                    let onejan = new Date(date.getFullYear(), 0, 1)
+                    let weekNum = Math.ceil((((date - onejan) / 86400000) + onejan.getDay() + 1) / 7)
+                    return "Week " + weekNum
+                }
                 color: Colors.gray  // Gruvbox gray
                 font.pixelSize: 11
                 font.family: "Cantarell"

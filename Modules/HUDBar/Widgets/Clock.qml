@@ -52,13 +52,13 @@ Rectangle {
 
         function updateTime() {
             currentDate = new Date()
-            text = Qt.formatDateTime(currentDate, "HH:mm:ss")
+            text = Qt.formatDateTime(currentDate, "HH:mm")
         }
 
         Component.onCompleted: updateTime()
 
         Timer {
-            interval: 1000
+            interval: 60000  // Update every 60 seconds (power saving)
             running: true
             repeat: true
             onTriggered: timeText.updateTime()

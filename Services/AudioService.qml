@@ -88,7 +88,7 @@ QtObject {
     }
 
     property var volumeCheckTimer: Timer {
-        interval: 1000
+        interval: 2000  // Check every 2 seconds (power saving)
         running: true
         repeat: true
         onTriggered: volumeChecker.running = true

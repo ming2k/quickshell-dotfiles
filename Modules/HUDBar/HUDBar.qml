@@ -150,6 +150,7 @@ Rectangle {
                  */
                 Audio {
                     Layout.alignment: Qt.AlignVCenter
+                    Layout.leftMargin: 12  // Extra spacing after system tray
                 }
 
                 /**

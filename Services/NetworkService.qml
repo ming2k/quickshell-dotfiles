@@ -124,7 +124,7 @@ QtObject {
     }
 
     property var networkCheckTimer: Timer {
-        interval: 3000  // Check every 3 seconds
+        interval: 5000  // Check every 5 seconds (power saving)
         running: true
         repeat: true
         onTriggered: networkChecker.running = true
