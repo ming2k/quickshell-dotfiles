@@ -5,7 +5,7 @@ import Quickshell.Io
 import "../../../Common"
 
 RowLayout {
-    spacing: 6
+    spacing: Colors.hudIconSpacing
     visible: hasBattery
 
     property int batteryPercent: 0
@@ -14,7 +14,7 @@ RowLayout {
 
     Icon {
         id: batteryIcon
-        size: 16
+        size: Colors.hudIconSize
         Layout.alignment: Qt.AlignVCenter
         iconColor: battText.color
 
@@ -42,12 +42,19 @@ RowLayout {
         font.pixelSize: 13
         font.family: "Cantarell"
 
-        text: `${batteryPercent}%`
+        text: {
+            let status = `${batteryPercent}%`
+            if (isCharging) {
+                status += " CHG"
+            }
+            return status
+        }
 
         color: {
             if (!hasBattery) return Colors.fg1
             if (batteryPercent <= 15 && !isCharging) return Colors.red
             if (batteryPercent <= 30 && !isCharging) return Colors.orange
+            if (isCharging) return Colors.aqua
             return Colors.fg1
         }
     }

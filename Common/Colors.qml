@@ -164,4 +164,38 @@ QtObject {
     readonly property color workspaceActiveIndicator: "#4c7899"  // Active workspace indicator
     readonly property color workspaceInactive: transparent       // Inactive workspace (no background)
     readonly property color workspaceOccupied: bg2               // Occupied but not active
+
+    //==========================================================================
+    // UI METRICS
+    //==========================================================================
+
+    /**
+     * HUD Bar Icon Size
+     *
+     * Standard icon size for all HUD bar widgets (Audio, Battery, Network, etc.)
+     * Change this value to adjust all HUD bar icons at once.
+     */
+    readonly property int hudIconSize: 9
+
+    /**
+     * HUD Bar Icon Spacing
+     *
+     * Spacing between icons and text in HUD bar widgets.
+     * Change this value to adjust spacing across all widgets at once.
+     */
+    readonly property int hudIconSpacing: 4
+
+    /**
+     * System Tray Icon Size
+     *
+     * Icon size for system tray icons (separate from HUD bar widgets).
+     */
+    readonly property int trayIconSize: 16
+
+    /**
+     * System Tray Icon Spacing
+     *
+     * Spacing between system tray icons.
+     */
+    readonly property int trayIconSpacing: 3
 }

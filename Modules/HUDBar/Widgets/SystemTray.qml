@@ -6,7 +6,7 @@ import "../../../Common"
 
 RowLayout {
     id: trayLayout
-    spacing: 6
+    spacing: Colors.trayIconSpacing
 
     // Access to parent window for menu anchoring
     property var parentWindow
@@ -29,7 +29,7 @@ RowLayout {
                 anchors.centerIn: parent
                 name: modelData.icon || ""
                 fallback: "application-x-executable"
-                size: 16
+                size: Colors.trayIconSize
                 iconColor: Colors.fg1
             }
 

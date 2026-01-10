@@ -22,11 +22,11 @@ Item {
     RowLayout {
         id: audioLayout
         anchors.fill: parent
-        spacing: 6
+        spacing: Colors.hudIconSpacing
 
         Icon {
             id: audioIcon
-            size: 16
+            size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
             iconColor: Colors.fg1
             name: AudioService.iconName

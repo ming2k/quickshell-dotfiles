@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 
-IconImage {
+Image {
     id: root
 
     // Primary icon name or path
@@ -20,9 +20,14 @@ IconImage {
     // Placeholder for compatibility (not used)
     property bool enableColorization: false
 
-    implicitSize: size
+    width: size
+    height: size
+    sourceSize.width: size
+    sourceSize.height: size
     asynchronous: true
     mipmap: true
+    fillMode: Image.PreserveAspectFit
+    smooth: true
 
     source: {
         if (!name) return ""
@@ -32,14 +37,31 @@ IconImage {
             return name
         }
 
-        // Use Quickshell's iconPath function to resolve icon from theme
+        // Try theme lookup first
         let iconPath = Quickshell.iconPath(name)
+        if (iconPath) return iconPath
 
-        // If primary icon not found and fallback specified, try fallback
-        if (!iconPath && fallback) {
+        // Try fallback icon if specified
+        if (fallback) {
             iconPath = Quickshell.iconPath(fallback)
+            if (iconPath) return iconPath
         }
 
-        return iconPath || ""
+        // Get home directory from environment
+        const homeDir = Quickshell.env("HOME") || "/home/ming"
+
+        // Try direct file paths in order of preference
+        // Priority: user local icons -> system pixmaps -> hicolor theme
+        const tryPaths = [
+            "file://" + homeDir + "/.local/share/icons/" + name + ".png",
+            "file://" + homeDir + "/.local/share/icons/" + name + ".svg",
+            "file:///usr/share/pixmaps/" + name + ".png",
+            "file:///usr/share/pixmaps/" + name + ".svg",
+            "file:///usr/share/icons/hicolor/48x48/apps/" + name + ".png",
+            "file:///usr/share/icons/hicolor/scalable/apps/" + name + ".svg"
+        ]
+
+        // Return first path (Qt's Image will try to load it)
+        return tryPaths[0]
     }
 }

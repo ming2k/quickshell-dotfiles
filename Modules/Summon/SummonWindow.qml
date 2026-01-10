@@ -113,70 +113,56 @@ WlrLayershell {
             // Search input
             Rectangle {
                 width: parent.width
-                height: 48
-                color: Colors.bg1
-                border.width: 1
+                height: 40
+                color: "transparent"
+                border.width: 2
                 border.color: searchInput.activeFocus ? Colors.blue : Colors.bg2
-                radius: 6
+                radius: 4
 
-                Row {
+                TextInput {
+                    id: searchInput
                     anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 12
+                    anchors.margins: 10
+                    color: Colors.fg1
+                    font.pixelSize: 15
+                    font.family: "Cantarell"
+                    verticalAlignment: TextInput.AlignVCenter
+                    selectByMouse: true
 
-                    // Search icon
                     Text {
-                        text: "🔍"
-                        font.pixelSize: 20
+                        visible: !searchInput.text && !searchInput.activeFocus
+                        text: "Search applications..."
+                        color: Colors.gray
+                        font: searchInput.font
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    // Input field
-                    TextInput {
-                        id: searchInput
-                        width: parent.width - 44
-                        height: parent.height
-                        color: Colors.fg1
-                        font.pixelSize: 16
-                        font.family: "Cantarell"
-                        verticalAlignment: TextInput.AlignVCenter
-                        selectByMouse: true
+                    onTextChanged: {
+                        selectedIndex = 0
+                    }
 
-                        Text {
-                            visible: !searchInput.text && !searchInput.activeFocus
-                            text: "Type to search applications..."
-                            color: Colors.gray
-                            font: searchInput.font
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        onTextChanged: {
-                            selectedIndex = 0
-                        }
-
-                        Keys.onPressed: event => {
-                            if (event.key === Qt.Key_Escape) {
-                                searchInput.focus = false  // Clear focus to avoid Wayland warnings
-                                SummonService.hide()
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Down) {
-                                if (selectedIndex < filteredApplications.length - 1) {
-                                    selectedIndex++
-                                    appList.positionViewAtIndex(selectedIndex, ListView.Contain)
-                                }
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Up) {
-                                if (selectedIndex > 0) {
-                                    selectedIndex--
-                                    appList.positionViewAtIndex(selectedIndex, ListView.Contain)
-                                }
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                if (filteredApplications.length > 0 && selectedIndex >= 0 && selectedIndex < filteredApplications.length) {
-                                    launchApplication(filteredApplications[selectedIndex])
-                                }
-                                event.accepted = true
+                    Keys.onPressed: event => {
+                        if (event.key === Qt.Key_Escape) {
+                            searchInput.focus = false  // Clear focus to avoid Wayland warnings
+                            SummonService.hide()
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Down) {
+                            if (selectedIndex < filteredApplications.length - 1) {
+                                selectedIndex++
+                                appList.positionViewAtIndex(selectedIndex, ListView.Contain)
                             }
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Up) {
+                            if (selectedIndex > 0) {
+                                selectedIndex--
+                                appList.positionViewAtIndex(selectedIndex, ListView.Contain)
+                            }
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            if (filteredApplications.length > 0 && selectedIndex >= 0 && selectedIndex < filteredApplications.length) {
+                                launchApplication(filteredApplications[selectedIndex])
+                            }
+                            event.accepted = true
                         }
                     }
                 }
@@ -185,7 +171,7 @@ WlrLayershell {
             // Application list
             Rectangle {
                 width: parent.width
-                height: parent.height - 108  // Remaining space after search and footer
+                height: parent.height - 60  // Remaining space after search
                 color: "transparent"
 
                 ListView {
@@ -197,23 +183,23 @@ WlrLayershell {
 
                     delegate: Rectangle {
                         width: ListView.view.width
-                        height: 56
+                        height: 42
                         color: {
                             if (index === selectedIndex) return Colors.bg2
                             if (appMouseArea.containsMouse) return Colors.bg1
                             return "transparent"
                         }
-                        radius: 6
+                        radius: 4
 
                         Row {
                             anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 12
+                            anchors.margins: 6
+                            spacing: 10
 
                             // Application icon
                             Icon {
                                 name: modelData.icon || "application-x-executable"
-                                size: 40
+                                size: 28
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
@@ -221,14 +207,14 @@ WlrLayershell {
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
-                                width: parent.width - 64
+                                width: parent.width - 50
 
                                 Text {
                                     text: modelData.name
                                     color: Colors.fg1
-                                    font.pixelSize: 14
+                                    font.pixelSize: 13
                                     font.family: "Cantarell"
-                                    font.weight: Font.Bold
+                                    font.weight: Font.Medium
                                     elide: Text.ElideRight
                                     width: parent.width
                                 }
@@ -236,7 +222,7 @@ WlrLayershell {
                                 Text {
                                     text: modelData.description || ""
                                     color: Colors.gray
-                                    font.pixelSize: 11
+                                    font.pixelSize: 10
                                     font.family: "Cantarell"
                                     elide: Text.ElideRight
                                     width: parent.width
@@ -268,16 +254,6 @@ WlrLayershell {
                     font.pixelSize: 14
                     font.family: "Cantarell"
                 }
-            }
-
-            // Footer hints
-            Text {
-                width: parent.width
-                text: "↑↓ Navigate  |  Enter Launch  |  Esc Close  |  " + filteredApplications.length + " apps"
-                color: Colors.gray
-                font.pixelSize: 11
-                font.family: "Cantarell"
-                horizontalAlignment: Text.AlignHCenter
             }
         }
     }

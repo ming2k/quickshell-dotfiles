@@ -5,11 +5,11 @@ import Quickshell.Io
 import "../../../Common"
 
 RowLayout {
-    spacing: 8
+    spacing: Colors.hudIconSpacing
 
     Icon {
         id: cpuIcon
-        size: 16
+        size: Colors.hudIconSize
         Layout.alignment: Qt.AlignVCenter
         iconColor: Colors.fg1
         name: "cpu"

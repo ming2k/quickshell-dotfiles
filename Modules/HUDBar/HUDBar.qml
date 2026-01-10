@@ -143,18 +143,6 @@ Rectangle {
                 }
 
                 /**
-                 * Visual Separator
-                 *
-                 * A thin vertical line separating system tray from status widgets.
-                 * Provides visual grouping of related elements.
-                 */
-                Rectangle {
-                    width: 1
-                    height: 16
-                    color: Colors.separator
-                }
-
-                /**
                  * Audio Widget
                  *
                  * Shows current volume level and mute status.

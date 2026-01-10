@@ -11,11 +11,11 @@ Item {
     RowLayout {
         id: networkLayout
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 6
+        spacing: Colors.hudIconSpacing
 
         Icon {
             id: networkIcon
-            size: 16
+            size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
             iconColor: NetworkService.connectionType === "disconnected" ? Colors.orange : Colors.fg1
             name: NetworkService.iconName
