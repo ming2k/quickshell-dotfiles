@@ -1,0 +1,289 @@
+/**
+ * Summon Window
+ *
+ * Application summon dialog displayed in the center of the screen.
+ * Provides search functionality to filter and launch installed applications.
+ * Uses Quickshell's built-in DesktopEntries for application discovery.
+ */
+
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Wayland
+import "../../Common"
+import "../../Services"
+
+WlrLayershell {
+    id: summon
+
+    visible: SummonService.visible && !hideDelayTimer.running
+
+    // Timer to delay hiding for proper text input cleanup
+    Timer {
+        id: hideDelayTimer
+        interval: 10
+        onTriggered: {
+            // Cleanup complete, window will hide via visible binding
+        }
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            searchInput.forceActiveFocus()
+            searchInput.text = ""
+            selectedIndex = 0
+        }
+    }
+
+    Connections {
+        target: SummonService
+        function onVisibleChanged() {
+            if (!SummonService.visible && visible) {
+                // User wants to hide - clear focus first, then delay
+                searchInput.focus = false
+                hideDelayTimer.start()
+            }
+        }
+    }
+
+    // Layer configuration
+    layer: WlrLayershell.Overlay
+    namespace: "quickshell:summon"
+    exclusiveZone: -1
+    keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+
+    // Center on screen
+    anchors {
+        top: true
+        left: true
+    }
+
+    margins {
+        top: Math.round((screen.height - 400) / 2)
+        left: Math.round((screen.width - 600) / 2)
+    }
+
+    implicitWidth: 600
+    implicitHeight: 400
+
+    color: "transparent"
+
+    // Selected application index
+    property int selectedIndex: 0
+
+    /**
+     * Filtered applications based on search query
+     */
+    property var filteredApplications: {
+        const query = searchInput.text.toLowerCase()
+        if (query === "") {
+            return DesktopEntries.applications.values
+        }
+
+        return DesktopEntries.applications.values.filter(app =>
+            app.name.toLowerCase().includes(query) ||
+            (app.description && app.description.toLowerCase().includes(query))
+        )
+    }
+
+    /**
+     * Launch application
+     */
+    function launchApplication(app) {
+        console.log("Launching:", app.name)
+        searchInput.focus = false  // Clear focus before hiding to avoid Wayland warnings
+        Quickshell.execDetached(app.command)
+        SummonService.hide()
+    }
+
+    // Main container
+    Rectangle {
+        anchors.fill: parent
+        color: Colors.bg0  // Gruvbox dark
+        border.width: 2
+        border.color: Colors.bg2
+        radius: 8
+        opacity: 0.98
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: 16
+            spacing: 12
+
+            // Search input
+            Rectangle {
+                width: parent.width
+                height: 48
+                color: Colors.bg1
+                border.width: 1
+                border.color: searchInput.activeFocus ? Colors.blue : Colors.bg2
+                radius: 6
+
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    spacing: 12
+
+                    // Search icon
+                    Text {
+                        text: "🔍"
+                        font.pixelSize: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    // Input field
+                    TextInput {
+                        id: searchInput
+                        width: parent.width - 44
+                        height: parent.height
+                        color: Colors.fg1
+                        font.pixelSize: 16
+                        font.family: "Cantarell"
+                        verticalAlignment: TextInput.AlignVCenter
+                        selectByMouse: true
+
+                        Text {
+                            visible: !searchInput.text && !searchInput.activeFocus
+                            text: "Type to search applications..."
+                            color: Colors.gray
+                            font: searchInput.font
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        onTextChanged: {
+                            selectedIndex = 0
+                        }
+
+                        Keys.onPressed: event => {
+                            if (event.key === Qt.Key_Escape) {
+                                searchInput.focus = false  // Clear focus to avoid Wayland warnings
+                                SummonService.hide()
+                                event.accepted = true
+                            } else if (event.key === Qt.Key_Down) {
+                                if (selectedIndex < filteredApplications.length - 1) {
+                                    selectedIndex++
+                                    appList.positionViewAtIndex(selectedIndex, ListView.Contain)
+                                }
+                                event.accepted = true
+                            } else if (event.key === Qt.Key_Up) {
+                                if (selectedIndex > 0) {
+                                    selectedIndex--
+                                    appList.positionViewAtIndex(selectedIndex, ListView.Contain)
+                                }
+                                event.accepted = true
+                            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                if (filteredApplications.length > 0 && selectedIndex >= 0 && selectedIndex < filteredApplications.length) {
+                                    launchApplication(filteredApplications[selectedIndex])
+                                }
+                                event.accepted = true
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Application list
+            Rectangle {
+                width: parent.width
+                height: parent.height - 108  // Remaining space after search and footer
+                color: "transparent"
+
+                ListView {
+                    id: appList
+                    anchors.fill: parent
+                    clip: true
+                    spacing: 2
+                    model: filteredApplications
+
+                    delegate: Rectangle {
+                        width: ListView.view.width
+                        height: 56
+                        color: {
+                            if (index === selectedIndex) return Colors.bg2
+                            if (appMouseArea.containsMouse) return Colors.bg1
+                            return "transparent"
+                        }
+                        radius: 6
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 12
+
+                            // Application icon
+                            Icon {
+                                name: modelData.icon || "application-x-executable"
+                                size: 40
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            // Application info
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 2
+                                width: parent.width - 64
+
+                                Text {
+                                    text: modelData.name
+                                    color: Colors.fg1
+                                    font.pixelSize: 14
+                                    font.family: "Cantarell"
+                                    font.weight: Font.Bold
+                                    elide: Text.ElideRight
+                                    width: parent.width
+                                }
+
+                                Text {
+                                    text: modelData.description || ""
+                                    color: Colors.gray
+                                    font.pixelSize: 11
+                                    font.family: "Cantarell"
+                                    elide: Text.ElideRight
+                                    width: parent.width
+                                    visible: text.length > 0
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: appMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                selectedIndex = index
+                                launchApplication(modelData)
+                            }
+                            onEntered: selectedIndex = index
+                            cursorShape: Qt.PointingHandCursor
+                        }
+                    }
+                }
+
+                // Empty state
+                Text {
+                    visible: filteredApplications.length === 0
+                    anchors.centerIn: parent
+                    text: searchInput.text ? "No applications found" : "No applications available"
+                    color: Colors.gray
+                    font.pixelSize: 14
+                    font.family: "Cantarell"
+                }
+            }
+
+            // Footer hints
+            Text {
+                width: parent.width
+                text: "↑↓ Navigate  |  Enter Launch  |  Esc Close  |  " + filteredApplications.length + " apps"
+                color: Colors.gray
+                font.pixelSize: 11
+                font.family: "Cantarell"
+                horizontalAlignment: Text.AlignHCenter
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        SummonService.summonWindow = summon
+        console.log("Summon initialized with", DesktopEntries.applications.values.length, "applications")
+    }
+}

@@ -1,0 +1,29 @@
+# Quickshell logs and runtime files
+*.qslog
+*.log
+
+# Temporary files
+*~
+*.swp
+*.swo
+.*.sw*
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.o
+*.so
+
+# Python cache (if any scripts)
+__pycache__/
+*.pyc
+*.pyo
