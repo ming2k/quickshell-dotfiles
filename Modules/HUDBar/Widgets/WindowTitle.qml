@@ -15,7 +15,7 @@ RowLayout {
 
         text: windowTitle
         color: "#d5c4a1"  // Gruvbox fg2 (slightly dimmed)
-        font.pixelSize: 13
+        font.pixelSize: 15
         font.family: "Cantarell"
         elide: Text.ElideRight
         maximumLineCount: 1

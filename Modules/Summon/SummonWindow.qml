@@ -212,7 +212,7 @@ WlrLayershell {
                                 Text {
                                     text: modelData.name
                                     color: Colors.fg1
-                                    font.pixelSize: 13
+                                    font.pixelSize: 15
                                     font.family: "Cantarell"
                                     font.weight: Font.Medium
                                     elide: Text.ElideRight
@@ -222,7 +222,7 @@ WlrLayershell {
                                 Text {
                                     text: modelData.description || ""
                                     color: Colors.gray
-                                    font.pixelSize: 10
+                                    font.pixelSize: 11
                                     font.family: "Cantarell"
                                     elide: Text.ElideRight
                                     width: parent.width

@@ -45,7 +45,7 @@ Rectangle {
         id: timeText
         anchors.centerIn: parent
         color: "#ebdbb2"  // Gruvbox fg1
-        font.pixelSize: 13
+        font.pixelSize: 15
         font.family: "Cantarell"
         font.weight: Font.Bold
         z: 1

@@ -61,7 +61,7 @@ RowLayout {
                 anchors.verticalCenterOffset: 1  // Compensate for border
                 text: workspaceNum
                 color: isActive ? "#ebdbb2" : "#928374"  // Gruvbox fg1 when active, gray otherwise
-                font.pixelSize: 13
+                font.pixelSize: 15
                 font.family: "Cantarell"
             }
 

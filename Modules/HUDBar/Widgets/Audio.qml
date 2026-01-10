@@ -36,7 +36,7 @@ Item {
             id: audioText
             Layout.alignment: Qt.AlignVCenter
             color: Colors.fg1
-            font.pixelSize: 13
+            font.pixelSize: 15
             font.family: "Cantarell"
             text: AudioService.isMuted ? "Muted" : `${AudioService.volumeLevel}%`
         }

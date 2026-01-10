@@ -19,7 +19,7 @@ RowLayout {
     Text {
         id: memText
         Layout.alignment: Qt.AlignVCenter
-        font.pixelSize: 13
+        font.pixelSize: 15
         font.family: "Cantarell"
         color: Colors.fg1
 

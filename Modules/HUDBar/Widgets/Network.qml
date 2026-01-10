@@ -24,7 +24,7 @@ Item {
         Text {
             id: netText
             Layout.alignment: Qt.AlignVCenter
-            font.pixelSize: 13
+            font.pixelSize: 15
             font.family: "Cantarell"
             color: NetworkService.connectionType === "disconnected" ? Colors.orange : Colors.fg1
 
