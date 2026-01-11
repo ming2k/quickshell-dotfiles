@@ -73,17 +73,23 @@ WlrLayershell {
 
     /**
      * Filtered applications based on search query
+     * Sorted by frecency (frequency + recency) when no search query
      */
     property var filteredApplications: {
         const query = searchInput.text.toLowerCase()
-        if (query === "") {
-            return DesktopEntries.applications.values
+
+        let apps = DesktopEntries.applications.values
+
+        // Filter by search query
+        if (query !== "") {
+            apps = apps.filter(app =>
+                app.name.toLowerCase().includes(query) ||
+                (app.description && app.description.toLowerCase().includes(query))
+            )
         }
 
-        return DesktopEntries.applications.values.filter(app =>
-            app.name.toLowerCase().includes(query) ||
-            (app.description && app.description.toLowerCase().includes(query))
-        )
+        // Sort by frecency (smart: frequent + recent apps first)
+        return SummonHistoryService.sortByFrecency(apps)
     }
 
     /**
@@ -92,6 +98,10 @@ WlrLayershell {
     function launchApplication(app) {
         console.log("Launching:", app.name)
         searchInput.focus = false  // Clear focus before hiding to avoid Wayland warnings
+
+        // Record launch in history for frecency tracking
+        SummonHistoryService.recordLaunch(SummonHistoryService.getAppId(app))
+
         Quickshell.execDetached(app.command)
         SummonService.hide()
     }
