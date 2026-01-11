@@ -42,13 +42,7 @@ RowLayout {
         font.pixelSize: 15
         font.family: "Cantarell"
 
-        text: {
-            let status = `${batteryPercent}%`
-            if (isCharging) {
-                status += " CHG"
-            }
-            return status
-        }
+        text: `${batteryPercent}%`
 
         color: {
             if (!hasBattery) return Colors.fg1

@@ -60,11 +60,9 @@ WlrLayershell {
     exclusiveZone: -1                      // Don't reserve screen space
     keyboardFocus: WlrKeyboardFocus.None   // Don't steal keyboard focus
 
-    // Position at top of screen, spanning full width
+    // Position at top of screen, centered
     anchors {
         top: true
-        left: true
-        right: true
     }
 
     // Offset from screen edge (optimized for better screen usage)
@@ -72,7 +70,14 @@ WlrLayershell {
         top: 40  // Reduced from 50px for better space utilization
     }
 
+    // Explicit size - only as wide as the notification content
+    width: 350
     implicitHeight: notifContent.implicitHeight  // Adjust to content size
+
+    // Center horizontally on screen
+    Component.onCompleted: {
+        x = (screen.width - width) / 2
+    }
 
     color: "transparent"  // Background is handled by the Rectangle inside
 
@@ -97,9 +102,7 @@ WlrLayershell {
      */
     Rectangle {
         id: notifContent
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        width: 350  // Compact width for better screen real estate
+        anchors.fill: parent
         implicitHeight: contentLayout.implicitHeight + 20  // Content height + padding (optimized)
 
         // Visual styling from Gruvbox theme
@@ -177,7 +180,7 @@ WlrLayershell {
              */
             Icon {
                 name: popup.notification.icon || popup.notification.appIcon || "dialog-information"
-                size: 32  // Better proportioned with 15px title + body text
+                size: 24  // Smaller icon for more compact notifications
                 Layout.alignment: Qt.AlignVCenter  // Changed from AlignTop for better balance
                 iconColor: Colors.accent  // Blue tint from Gruvbox theme
             }
