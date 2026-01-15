@@ -76,9 +76,21 @@ WlrLayershell {
      * Sorted by frecency (frequency + recency) when no search query
      */
     property var filteredApplications: {
+        // Force dependency on history for reactivity (history loads async)
+        const _history = SummonHistoryService.history
+
         const query = searchInput.text.toLowerCase()
 
         let apps = DesktopEntries.applications.values
+
+        // Deduplicate by app name (keeps first occurrence)
+        const seen = new Set()
+        apps = apps.filter(app => {
+            const key = app.name.toLowerCase()
+            if (seen.has(key)) return false
+            seen.add(key)
+            return true
+        })
 
         // Filter by search query
         if (query !== "") {

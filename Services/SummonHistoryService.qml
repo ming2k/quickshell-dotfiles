@@ -29,7 +29,7 @@ QtObject {
     // Frecency weights
     readonly property real recencyWeight: 0.6  // 60% weight on recency
     readonly property real frequencyWeight: 0.4  // 40% weight on frequency
-    readonly property int maxAge: 30 * 24 * 60 * 60 * 1000  // 30 days in milliseconds
+    readonly property real maxAge: 30 * 24 * 60 * 60 * 1000  // 30 days in milliseconds (use real to avoid int overflow)
 
     // Process for loading history
     property Process loadProcess: Process {
@@ -157,7 +157,9 @@ QtObject {
     function getAppId(app) {
         // Use command as ID (e.g., "firefox", "code", etc.)
         // This is more stable than names which might change with localization
-        return app.command || app.name
+        // Convert to string to ensure consistent lookup (command may be array)
+        const cmd = app.command || app.name
+        return Array.isArray(cmd) ? cmd.join(",") : String(cmd)
     }
 
     /**
