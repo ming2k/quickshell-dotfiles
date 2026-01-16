@@ -143,6 +143,17 @@ Rectangle {
                 }
 
                 /**
+                 * Privacy Widget
+                 *
+                 * Shows indicators when camera, microphone, or screen sharing is active.
+                 * Only visible when privacy-sensitive resources are in use.
+                 */
+                Privacy {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.leftMargin: 12
+                }
+
+                /**
                  * Audio Widget
                  *
                  * Shows current volume level and mute status.
