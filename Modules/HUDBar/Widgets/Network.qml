@@ -33,6 +33,8 @@ Item {
                     return NetworkService.ssid
                 } else if (NetworkService.connectionType === "ethernet") {
                     return "Ethernet"
+                } else if (NetworkService.connectionType === "usb") {
+                    return "USB Tethering"
                 }
                 return "Disconnected"
             }

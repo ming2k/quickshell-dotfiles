@@ -13,7 +13,7 @@ QtObject {
     property string iconName: "network-offline"
 
     function updateIconName() {
-        if (connectionType === "ethernet") {
+        if (connectionType === "ethernet" || connectionType === "usb") {
             iconName = "network-wired-activated"
         } else if (connectionType === "wifi") {
             if (signalStrength >= 80) iconName = "network-wireless-signal-excellent"
@@ -88,8 +88,22 @@ QtObject {
                 fi
             fi
 
-            # Check ethernet
-            eth_iface=$(ip link show | grep -oP '^\\d+: \\K(eth[^:]+|enp[^:]+|eno[^:]+)' | head -1)
+            # Check USB tethering (enp*u*, usb0, rndis*, etc.) - state can be UP or UNKNOWN
+            usb_iface=$(ip link show | grep -oP '^\\d+: \\K(enp[^:]*u[^:]+|usb[^:]+|rndis[^:]+)' | head -1)
+            if [ -n "$usb_iface" ] && ip link show "$usb_iface" | grep -qE "state (UP|UNKNOWN)"; then
+                ip=$(ip -4 addr show "$usb_iface" 2>/dev/null | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}' | head -1)
+                if [ -n "$ip" ]; then
+                    echo "usb||0|$ip"
+                    exit 0
+                fi
+            fi
+
+            # Check ethernet (exclude USB interfaces)
+            eth_iface=$(ip link show | grep -oP '^\\d+: \\K(eth[^:]+|eno[^:]+)' | head -1)
+            if [ -z "$eth_iface" ]; then
+                # Check enp* but exclude USB (enp*u*)
+                eth_iface=$(ip link show | grep -oP '^\\d+: \\Kenp[^:]+' | grep -v 'u' | head -1)
+            fi
             if [ -n "$eth_iface" ] && ip link show "$eth_iface" | grep -q "state UP"; then
                 ip=$(ip -4 addr show "$eth_iface" 2>/dev/null | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}' | head -1)
                 echo "ethernet||0|$ip"
