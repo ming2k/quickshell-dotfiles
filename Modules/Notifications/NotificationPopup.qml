@@ -7,7 +7,7 @@
  *
  * Features:
  * - Slide-in animation from top
- * - Interactive close button
+ * - Click anywhere to dismiss
  * - Support for notification actions (buttons)
  * - Auto-dismiss after 5 seconds
  * - Icon display with fallbacks
@@ -158,9 +158,9 @@ WlrLayershell {
         /**
          * Main Content Layout
          *
-         * Horizontal layout containing icon and text content.
-         * Structure: [Icon] [Title/Body/Actions]
-         * Optimized spacing for compact, modern appearance.
+         * Horizontal layout containing image/icon and text content.
+         * Structure: [Image/Icon] [Title/Body/Actions]
+         * Left side shows notification image (max 80x80) or app icon fallback.
          */
         RowLayout {
             id: contentLayout
@@ -169,20 +169,57 @@ WlrLayershell {
             spacing: 10          // Reduced space between icon and text
 
             /**
-             * Notification Icon
+             * Notification Image or Icon (Left Side)
              *
-             * Displays the notification icon with fallback chain:
-             * 1. notification.icon (specific icon for this notification)
-             * 2. notification.appIcon (application's icon)
-             * 3. "dialog-information" (default fallback)
+             * Shows the notification image if available (e.g., screenshot, album art),
+             * otherwise falls back to the app icon. sourceSize limits the loaded
+             * resolution for better performance and guaranteed size constraints.
              *
-             * Icon is aligned to center for better visual balance with text.
+             * Image sources (in priority order):
+             * 1. notification.image - explicit image attachment
+             * 2. notification.appIcon - if it's a file path (e.g., screenshot)
              */
+            Image {
+                id: notifImage
+                // Check for image first, then appIcon if it's a file (not an icon name)
+                property string imagePath: {
+                    if (popup.notification.image)
+                        return popup.notification.image
+                    const appIcon = popup.notification.appIcon || ""
+                    // If appIcon is a file path or file URL, use it as image
+                    if (appIcon.startsWith("file://") || appIcon.startsWith("/"))
+                        return appIcon
+                    return ""
+                }
+                source: imagePath ? (imagePath.startsWith("/") ? "file://" + imagePath : imagePath) : ""
+                visible: status === Image.Ready && imagePath !== ""
+                Layout.alignment: Qt.AlignTop
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: 80
+                sourceSize.width: 80
+                sourceSize.height: 80
+                fillMode: Image.PreserveAspectFit
+                asynchronous: true
+                smooth: true
+                mipmap: true
+            }
+
+            // Fallback icon when no image is available
             Icon {
-                name: popup.notification.icon || popup.notification.appIcon || "dialog-information"
-                size: 24  // Smaller icon for more compact notifications
-                Layout.alignment: Qt.AlignVCenter  // Changed from AlignTop for better balance
-                iconColor: Colors.accent  // Blue tint from Gruvbox theme
+                id: fallbackIcon
+                // Only show if notifImage is not showing
+                visible: !notifImage.visible
+                // Use appIcon only if it's an icon name (not a file path)
+                name: {
+                    const appIcon = popup.notification.appIcon || ""
+                    if (appIcon.startsWith("file://") || appIcon.startsWith("/"))
+                        return "dialog-information"
+                    return appIcon || "dialog-information"
+                }
+                size: 24
+                Layout.alignment: Qt.AlignTop
+                Layout.topMargin: 2
+                iconColor: Colors.accent
             }
 
             /**
@@ -195,67 +232,15 @@ WlrLayershell {
                 Layout.fillWidth: true
                 spacing: 4  // Tighter vertical spacing for compact design
 
-                /**
-                 * Title Row
-                 *
-                 * Contains the notification summary (title) and close button.
-                 * The title takes available space, close button is fixed size.
-                 */
-                RowLayout {
+                // Notification title
+                Text {
+                    text: popup.notification.summary || "Notification"
+                    font.bold: true
+                    font.pixelSize: 15  // Slightly smaller for better proportions
+                    font.family: "Cantarell"
+                    color: Colors.fg1  // Bright foreground color
                     Layout.fillWidth: true
-
-                    // Notification title
-                    Text {
-                        text: popup.notification.summary || "Notification"
-                        font.bold: true
-                        font.pixelSize: 15  // Slightly smaller for better proportions
-                        font.family: "Cantarell"
-                        color: Colors.fg1  // Bright foreground color
-                        Layout.fillWidth: true
-                        elide: Text.ElideRight  // Truncate with "..." if too long
-                    }
-
-                    /**
-                     * Close Button
-                     *
-                     * Modern circular close button with smooth hover effects.
-                     * Subtle by default, prominent on interaction.
-                     */
-                    Rectangle {
-                        width: 24
-                        height: 24
-                        color: closeArea.pressed ? Colors.bg3 : (closeArea.containsMouse ? Colors.bg2 : "transparent")
-                        radius: 12  // Fully circular
-
-                        // Smooth color transitions
-                        Behavior on color {
-                            ColorAnimation { duration: 150 }
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "×"  // Unicode multiplication sign (cleaner than ✕)
-                            color: closeArea.containsMouse ? Colors.fg1 : Colors.gray
-                            font.pixelSize: 20
-                            font.family: "Cantarell"
-
-                            // Smooth color transitions on hover
-                            Behavior on color {
-                                ColorAnimation { duration: 150 }
-                            }
-                        }
-
-                        MouseArea {
-                            id: closeArea
-                            anchors.fill: parent
-                            hoverEnabled: true  // Enable hover effects
-                            onClicked: {
-                                popup.notification.tracked = false  // Mark as closed
-                                popup.destroy()  // Remove popup window
-                            }
-                            cursorShape: Qt.PointingHandCursor  // Show pointer cursor
-                        }
-                    }
+                    elide: Text.ElideRight  // Truncate with "..." if too long
                 }
 
                 /**
@@ -342,6 +327,24 @@ WlrLayershell {
                 }
             }
         }
+
+        /**
+         * Click-to-Close Area
+         *
+         * Covers the entire notification card. Clicking anywhere
+         * (except action buttons) will dismiss the notification.
+         * Action buttons have their own MouseAreas that take priority.
+         */
+        MouseArea {
+            id: dismissArea
+            anchors.fill: parent
+            z: -1  // Behind content so action buttons still work
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                popup.notification.tracked = false
+                popup.destroy()
+            }
+        }
     }
 
     /**
@@ -350,8 +353,8 @@ WlrLayershell {
      * Automatically closes the notification after 5 seconds.
      * This prevents notifications from accumulating on screen.
      *
-     * User can still manually close earlier using the close button
-     * or by clicking an action.
+     * User can dismiss earlier by clicking anywhere on the notification
+     * or by clicking an action button.
      */
     Timer {
         interval: 5000  // 5 seconds in milliseconds

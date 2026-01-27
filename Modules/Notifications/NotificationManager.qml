@@ -48,6 +48,8 @@ Item {
          */
         onNotification: notification => {
             console.log("Notification received:", notification.summary)
+            console.log("  image:", notification.image)
+            console.log("  appIcon:", notification.appIcon)
 
             // Dynamically load the NotificationPopup component
             const component = Qt.createComponent("NotificationPopup.qml")
