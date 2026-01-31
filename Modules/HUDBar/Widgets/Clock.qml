@@ -12,16 +12,25 @@ Rectangle {
 
     property var currentDate: new Date()
     property var tooltipWindow: null
+    property bool isHovering: false
 
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: {
-            // Create tooltip window on hover
+    // Timer to show seconds and tooltip after hovering
+    Timer {
+        id: hoverDelayTimer
+        interval: 400  // 0.4 second delay
+        running: false
+        repeat: false
+        onTriggered: {
+            clock.isHovering = true
+            // Update to show seconds
+            timeText.updateTime()
+            // Start live second updates
+            liveUpdateTimer.running = true
+            // Create tooltip window
             const component = Qt.createComponent("ClockTooltip.qml")
             if (component.status === Component.Ready) {
                 tooltipWindow = component.createObject(null, {
-                    currentDate: clock.currentDate,
+                    currentDate: new Date(),
                     clockX: clock.mapToGlobal(0, 0).x,
                     clockY: clock.mapToGlobal(0, 0).y,
                     clockWidth: clock.width,
@@ -31,7 +40,33 @@ Rectangle {
                 console.error("Failed to create clock tooltip:", component.errorString())
             }
         }
+    }
+
+    // Timer for live second updates in main clock (only runs when hovering)
+    Timer {
+        id: liveUpdateTimer
+        interval: 1000  // Update every second
+        running: false
+        repeat: true
+        onTriggered: {
+            timeText.updateTime()
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        onEntered: {
+            // Start the delay timer (both seconds and tooltip appear after delay)
+            hoverDelayTimer.restart()
+        }
         onExited: {
+            clock.isHovering = false
+            // Stop all timers
+            hoverDelayTimer.stop()
+            liveUpdateTimer.stop()
+            // Restore normal time format
+            timeText.updateTime()
             // Destroy tooltip window when hover ends
             if (tooltipWindow) {
                 tooltipWindow.destroy()
@@ -52,7 +87,9 @@ Rectangle {
 
         function updateTime() {
             currentDate = new Date()
-            text = Qt.formatDateTime(currentDate, "HH:mm")
+            text = clock.isHovering
+                ? Qt.formatDateTime(currentDate, "HH:mm:ss")
+                : Qt.formatDateTime(currentDate, "HH:mm")
         }
 
         Component.onCompleted: updateTime()
