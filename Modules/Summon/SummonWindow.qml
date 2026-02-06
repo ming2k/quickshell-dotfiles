@@ -1,11 +1,3 @@
-/**
- * Summon Window
- *
- * Application summon dialog displayed in the center of the screen.
- * Provides search functionality to filter and launch installed applications.
- * Uses Quickshell's built-in DesktopEntries for application discovery.
- */
-
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -18,13 +10,10 @@ WlrLayershell {
 
     visible: SummonService.visible && !hideDelayTimer.running
 
-    // Timer to delay hiding for proper text input cleanup
     Timer {
         id: hideDelayTimer
         interval: 10
-        onTriggered: {
-            // Cleanup complete, window will hide via visible binding
-        }
+        onTriggered: {}
     }
 
     onVisibleChanged: {
@@ -46,13 +35,11 @@ WlrLayershell {
         }
     }
 
-    // Layer configuration
     layer: WlrLayershell.Overlay
     namespace: "quickshell:summon"
     exclusiveZone: -1
     keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
-    // Center on screen
     anchors {
         top: true
         left: true
@@ -68,22 +55,15 @@ WlrLayershell {
 
     color: "transparent"
 
-    // Selected application index
     property int selectedIndex: 0
 
-    /**
-     * Filtered applications based on search query
-     * Sorted by frecency (frequency + recency) when no search query
-     */
     property var filteredApplications: {
-        // Force dependency on history for reactivity (history loads async)
-        const _history = SummonHistoryService.history
+        const _history = SummonHistoryService.history  // force reactivity
 
         const query = searchInput.text.toLowerCase()
 
         let apps = DesktopEntries.applications.values
 
-        // Deduplicate by app name (keeps first occurrence)
         const seen = new Set()
         apps = apps.filter(app => {
             const key = app.name.toLowerCase()
@@ -92,7 +72,6 @@ WlrLayershell {
             return true
         })
 
-        // Filter by search query
         if (query !== "") {
             apps = apps.filter(app =>
                 app.name.toLowerCase().includes(query) ||
@@ -100,25 +79,17 @@ WlrLayershell {
             )
         }
 
-        // Sort by frecency (smart: frequent + recent apps first)
         return SummonHistoryService.sortByFrecency(apps)
     }
 
-    /**
-     * Launch application
-     */
     function launchApplication(app) {
-        console.log("Launching:", app.name)
-        searchInput.focus = false  // Clear focus before hiding to avoid Wayland warnings
-
-        // Record launch in history for frecency tracking
+        searchInput.focus = false
         SummonHistoryService.recordLaunch(SummonHistoryService.getAppId(app))
 
         Quickshell.execDetached(app.command)
         SummonService.hide()
     }
 
-    // Main container
     Rectangle {
         anchors.fill: parent
         color: Colors.bg0  // Gruvbox dark
@@ -132,7 +103,6 @@ WlrLayershell {
             anchors.margins: 16
             spacing: 12
 
-            // Search input
             Rectangle {
                 width: parent.width
                 height: 40
@@ -190,10 +160,9 @@ WlrLayershell {
                 }
             }
 
-            // Application list
             Rectangle {
                 width: parent.width
-                height: parent.height - 60  // Remaining space after search
+                height: parent.height - 60
                 color: "transparent"
 
                 ListView {
@@ -218,14 +187,12 @@ WlrLayershell {
                             anchors.margins: 6
                             spacing: 10
 
-                            // Application icon
                             Icon {
                                 name: modelData.icon || "application-x-executable"
                                 size: 28
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
-                            // Application info
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
@@ -267,7 +234,6 @@ WlrLayershell {
                     }
                 }
 
-                // Empty state
                 Text {
                     visible: filteredApplications.length === 0
                     anchors.centerIn: parent

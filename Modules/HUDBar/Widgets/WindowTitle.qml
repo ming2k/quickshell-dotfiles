@@ -14,14 +14,13 @@ RowLayout {
         Layout.maximumWidth: 300
 
         text: windowTitle
-        color: "#d5c4a1"  // Gruvbox fg2 (slightly dimmed)
+        color: "#d5c4a1"
         font.pixelSize: 15
         font.family: "Cantarell"
         elide: Text.ElideRight
         maximumLineCount: 1
     }
 
-    // Query focused window title periodically
     Process {
         id: windowQuery
         running: true
@@ -35,7 +34,7 @@ RowLayout {
     }
 
     Timer {
-        interval: 500  // Update twice per second
+        interval: 500
         running: true
         repeat: true
         onTriggered: windowQuery.running = true

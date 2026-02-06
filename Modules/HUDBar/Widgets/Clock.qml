@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 
-// Match waybar style - simple clock with seconds, bold
 Rectangle {
     id: clock
     width: timeText.implicitWidth + 20
@@ -14,19 +13,15 @@ Rectangle {
     property var tooltipWindow: null
     property bool isHovering: false
 
-    // Timer to show seconds and tooltip after hovering
     Timer {
         id: hoverDelayTimer
-        interval: 400  // 0.4 second delay
+        interval: 400
         running: false
         repeat: false
         onTriggered: {
             clock.isHovering = true
-            // Update to show seconds
             timeText.updateTime()
-            // Start live second updates
             liveUpdateTimer.running = true
-            // Create tooltip window
             const component = Qt.createComponent("ClockTooltip.qml")
             if (component.status === Component.Ready) {
                 tooltipWindow = component.createObject(null, {
@@ -42,10 +37,9 @@ Rectangle {
         }
     }
 
-    // Timer for live second updates in main clock (only runs when hovering)
     Timer {
         id: liveUpdateTimer
-        interval: 1000  // Update every second
+        interval: 1000
         running: false
         repeat: true
         onTriggered: {
@@ -57,17 +51,13 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         onEntered: {
-            // Start the delay timer (both seconds and tooltip appear after delay)
             hoverDelayTimer.restart()
         }
         onExited: {
             clock.isHovering = false
-            // Stop all timers
             hoverDelayTimer.stop()
             liveUpdateTimer.stop()
-            // Restore normal time format
             timeText.updateTime()
-            // Destroy tooltip window when hover ends
             if (tooltipWindow) {
                 tooltipWindow.destroy()
                 tooltipWindow = null
@@ -79,7 +69,7 @@ Rectangle {
     Text {
         id: timeText
         anchors.centerIn: parent
-        color: "#ebdbb2"  // Gruvbox fg1
+        color: "#ebdbb2"
         font.pixelSize: 15
         font.family: "Cantarell"
         font.weight: Font.Bold
@@ -95,7 +85,7 @@ Rectangle {
         Component.onCompleted: updateTime()
 
         Timer {
-            interval: 60000  // Update every 60 seconds (power saving)
+            interval: 60000
             running: true
             repeat: true
             onTriggered: timeText.updateTime()

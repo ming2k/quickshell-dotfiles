@@ -44,7 +44,6 @@ QtObject {
         volumeAdjustLoader.active = true
     }
 
-    // Volume monitoring process
     property var volumeChecker: Process {
         id: volumeChecker
         running: true
@@ -88,7 +87,7 @@ QtObject {
     }
 
     property var volumeCheckTimer: Timer {
-        interval: 2000  // Check every 2 seconds (power saving)
+        interval: 2000
         running: true
         repeat: true
         onTriggered: volumeChecker.running = true
