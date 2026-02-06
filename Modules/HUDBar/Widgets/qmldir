@@ -8,4 +8,5 @@ Network 1.0 Network.qml
 Privacy 1.0 Privacy.qml
 WindowTitle 1.0 WindowTitle.qml
 Workspaces 1.0 Workspaces.qml
+Inhibit 1.0 Inhibit.qml
 SystemTray 1.0 SystemTray.qml

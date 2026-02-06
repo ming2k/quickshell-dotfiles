@@ -4,3 +4,4 @@ singleton NetworkService 1.0 NetworkService.qml
 singleton PrivacyService 1.0 PrivacyService.qml
 singleton SummonService 1.0 SummonService.qml
 singleton SummonHistoryService 1.0 SummonHistoryService.qml
+singleton InhibitService 1.0 InhibitService.qml

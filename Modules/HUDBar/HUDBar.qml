@@ -183,6 +183,10 @@ Rectangle {
                 Battery {
                     Layout.alignment: Qt.AlignVCenter
                 }
+
+                Inhibit {
+                    Layout.alignment: Qt.AlignVCenter
+                }
             }
         }
     }
