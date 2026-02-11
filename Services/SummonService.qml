@@ -8,7 +8,7 @@ QtObject {
     id: service
 
     property bool visible: false
-    property var summonWindow: null
+    property string focusedOutput: ""
 
     // FIFO IPC watcher - reads commands (toggle/show/hide) from named pipe.
     // FIFO is pre-created in shell.qml for fastest boot readiness.
@@ -26,6 +26,28 @@ QtObject {
                 }
             }
         }
+    }
+
+    property Process focusedOutputQuery: Process {
+        running: true
+        command: ["sh", "-c", "niri msg -j workspaces"]
+
+        stdout: SplitParser {
+            onRead: data => {
+                try {
+                    let ws = JSON.parse(data.trim())
+                    let focused = ws.find(w => w.is_focused)
+                    if (focused) service.focusedOutput = focused.output
+                } catch (e) {}
+            }
+        }
+    }
+
+    property Timer focusedOutputTimer: Timer {
+        interval: 500
+        running: true
+        repeat: true
+        onTriggered: focusedOutputQuery.running = true
     }
 
     function toggle() { visible = !visible }

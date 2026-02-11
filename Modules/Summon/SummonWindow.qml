@@ -8,7 +8,9 @@ import "../../Services"
 WlrLayershell {
     id: summon
 
-    visible: SummonService.visible && !hideDelayTimer.running
+    property bool isFocusedScreen: false
+
+    visible: SummonService.visible && isFocusedScreen && !hideDelayTimer.running
 
     Timer {
         id: hideDelayTimer
@@ -247,7 +249,6 @@ WlrLayershell {
     }
 
     Component.onCompleted: {
-        SummonService.summonWindow = summon
         console.log("Summon initialized with", DesktopEntries.applications.values.length, "applications")
     }
 }

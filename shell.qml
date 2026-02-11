@@ -46,7 +46,13 @@ ShellRoot {
 
     NotificationManager {}
 
-    SummonWindow {
-        screen: Quickshell.screens[0]
+    Variants {
+        model: Quickshell.screens
+
+        SummonWindow {
+            property var modelData
+            screen: modelData
+            isFocusedScreen: modelData.name === SummonService.focusedOutput
+        }
     }
 }
