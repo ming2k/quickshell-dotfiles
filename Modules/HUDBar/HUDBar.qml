@@ -10,6 +10,7 @@ Rectangle {
     color: Colors.barBackground
 
     property var window
+    property string screenName: ""
 
     RowLayout {
         anchors.fill: parent
@@ -29,6 +30,7 @@ Rectangle {
 
                 Workspaces {
                     Layout.alignment: Qt.AlignVCenter
+                    screenName: hudBar.screenName
                 }
 
                 WindowTitle {

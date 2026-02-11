@@ -39,6 +39,7 @@ ShellRoot {
             HUDBar {
                 anchors.fill: parent
                 window: panelWindow
+                screenName: modelData.name
             }
         }
     }
