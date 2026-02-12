@@ -12,6 +12,7 @@ Rectangle {
     property var currentDate: new Date()
     property var tooltipWindow: null
     property bool isHovering: false
+    property var barWindow
 
     Timer {
         id: hoverDelayTimer
@@ -24,12 +25,13 @@ Rectangle {
             liveUpdateTimer.running = true
             const component = Qt.createComponent("ClockTooltip.qml")
             if (component.status === Component.Ready) {
+                const pos = clock.mapToItem(null, 0, 0)
                 tooltipWindow = component.createObject(null, {
                     currentDate: new Date(),
-                    clockX: clock.mapToGlobal(0, 0).x,
-                    clockY: clock.mapToGlobal(0, 0).y,
+                    clockX: pos.x,
+                    clockY: pos.y,
                     clockWidth: clock.width,
-                    screen: Quickshell.screens[0]
+                    screen: barWindow ? barWindow.screen : Quickshell.screens[0]
                 })
             } else {
                 console.error("Failed to create clock tooltip:", component.errorString())

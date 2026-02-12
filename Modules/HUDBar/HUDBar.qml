@@ -43,6 +43,7 @@ Rectangle {
         // Center: Clock
         Clock {
             Layout.alignment: Qt.AlignCenter
+            barWindow: hudBar.window
         }
 
         // Right: System status

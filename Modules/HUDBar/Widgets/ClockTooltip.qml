@@ -19,9 +19,11 @@ WlrLayershell {
 
     // Properties passed from Clock widget
     property var currentDate
-    required property real clockX      // Clock's global X position
-    required property real clockY      // Clock's global Y position
+    required property real clockX      // Clock's X position within the bar window
+    required property real clockY      // Clock's Y position within the bar window
     required property real clockWidth  // Clock's width for centering
+
+    visible: true
 
     // Layer configuration - appears above the bar
     layer: WlrLayershell.Overlay
