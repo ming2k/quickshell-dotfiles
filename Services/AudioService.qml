@@ -29,13 +29,13 @@ QtObject {
     function increaseVolume() {
         let currentVol = parseInt(volumeLevel)
         if (currentVol < 100) {
-            volumeAdjustLoader.volumeChange = "+2%"
+            volumeAdjustLoader.volumeChange = "2%+"
             volumeAdjustLoader.active = true
         }
     }
 
     function decreaseVolume() {
-        volumeAdjustLoader.volumeChange = "-2%"
+        volumeAdjustLoader.volumeChange = "2%-"
         volumeAdjustLoader.active = true
     }
 

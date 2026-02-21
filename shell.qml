@@ -15,7 +15,7 @@ ShellRoot {
         // Pre-create FIFO immediately so Super+Space works ASAP on boot.
         // The subprocess in SummonService takes time to start; this ensures
         // the FIFO exists before any external writer tries to use it.
-        Quickshell.execDetached(["sh", "-c", "mkfifo /tmp/quickshell-summon.fifo 2>/dev/null || true"])
+        Quickshell.execDetached(["sh", "-c", "rm -f /tmp/quickshell-summon.fifo && mkfifo /tmp/quickshell-summon.fifo"])
     }
 
     // HUD bar on each screen
