@@ -1,5 +1,8 @@
 //@ pragma UseQApplication
 //@ pragma IconTheme Papirus-Dark
+//@ pragma Env XCOMPOSEFILE = /home/ming/.config/quickshell/.XCompose
+//@ pragma Env QT_QPA_PLATFORMTHEME = qt6ct
+//@ pragma Env QT_LOGGING_RULES = quickshell.service.sni.watcher.warning=false;qt.qpa.input.methods.warning=false;qt.qpa.wayland.textinput.warning=false
 
 import QtQuick
 import Quickshell

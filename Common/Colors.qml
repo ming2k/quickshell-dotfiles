@@ -71,7 +71,7 @@ QtObject {
     readonly property color workspaceOccupied: bg2
 
     // UI metrics
-    readonly property int hudIconSize: 9
+    readonly property int hudIconSize: 16
     readonly property int hudIconSpacing: 4
     readonly property int trayIconSize: 16
     readonly property int trayIconSpacing: 3

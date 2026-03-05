@@ -1,0 +1,5 @@
+# Minimal compose table so Qt can initialize input methods even when the
+# system only provides C.UTF-8 and no X11 compose data package is installed.
+<Multi_key> <a> <e> : "ae"
+<Multi_key> <o> <e> : "oe"
+<Multi_key> <s> <s> : "ss"
