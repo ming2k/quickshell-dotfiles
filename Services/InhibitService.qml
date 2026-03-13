@@ -8,40 +8,42 @@ QtObject {
 
     property bool isInhibited: false
 
+    readonly property string swayidleCmd: "swayidle -w timeout 570 'brightnessctl -s set 10' resume 'brightnessctl -r' timeout 600 'swaylock -f' timeout 605 'niri msg output eDP-1 off; niri msg output HDMI-A-1 off' resume 'niri msg output eDP-1 on; niri msg output HDMI-A-1 on' timeout 1800 'systemctl suspend' before-sleep 'swaylock -f'"
+
     function toggleInhibit() {
         if (isInhibited) {
-            resumeLoader.active = true
+            restartLoader.active = true
         } else {
-            stopLoader.active = true
+            killLoader.active = true
         }
     }
 
-    // Pause swayidle (SIGSTOP)
-    property var stopLoader: Loader {
-        id: stopLoader
+    // Kill swayidle to inhibit
+    property var killLoader: Loader {
+        id: killLoader
         active: false
 
         sourceComponent: Process {
             running: true
-            command: ["pkill", "-STOP", "-x", "swayidle"]
+            command: ["pkill", "-x", "swayidle"]
             onExited: {
                 inhibitService.isInhibited = true
-                stopLoader.active = false
+                killLoader.active = false
             }
         }
     }
 
-    // Resume swayidle (SIGCONT)
-    property var resumeLoader: Loader {
-        id: resumeLoader
+    // Restart swayidle to un-inhibit (fresh timers)
+    property var restartLoader: Loader {
+        id: restartLoader
         active: false
 
         sourceComponent: Process {
             running: true
-            command: ["pkill", "-CONT", "-x", "swayidle"]
+            command: ["bash", "-c", "setsid " + inhibitService.swayidleCmd + " &"]
             onExited: {
                 inhibitService.isInhibited = false
-                resumeLoader.active = false
+                restartLoader.active = false
             }
         }
     }

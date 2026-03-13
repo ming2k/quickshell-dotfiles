@@ -2,7 +2,9 @@ module Modules.HUDBar.Widgets
 Audio 1.0 Audio.qml
 Battery 1.0 Battery.qml
 Clock 1.0 Clock.qml
+MprisCard 1.0 MprisCard.qml
 Network 1.0 Network.qml
+NotificationBell 1.0 NotificationBell.qml
 Privacy 1.0 Privacy.qml
 WindowTitle 1.0 WindowTitle.qml
 Workspaces 1.0 Workspaces.qml

@@ -29,6 +29,7 @@ import Quickshell.Wayland
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import "../../Common"
+import "../../Services"
 
 /**
  * Wayland Layershell Window
@@ -41,6 +42,35 @@ WlrLayershell {
 
     // The notification object passed from NotificationManager
     required property var notification
+    required property int historyId
+    required property int popupId
+    readonly property int popupIndex: Math.max(0, NotificationCenterService.popupIndexFor(popupId))
+    readonly property var visibleActions: {
+        if (!notification.actions)
+            return []
+
+        return notification.actions.filter(action => action.identifier !== "default")
+    }
+    readonly property var defaultAction: {
+        if (!notification.actions)
+            return null
+
+        for (const action of notification.actions) {
+            if (action.identifier === "default")
+                return action
+        }
+
+        return null
+    }
+    readonly property int resolvedTimeout: {
+        if (notification.expireTimeout === 0)
+            return 0
+        if (notification.expireTimeout > 0)
+            return notification.expireTimeout
+        if ((notification.urgency || 0) >= 2)
+            return 8000
+        return 5000
+    }
 
     // Determine sound file based on urgency level
     property string soundFile: {
@@ -60,26 +90,31 @@ WlrLayershell {
     exclusiveZone: -1                      // Don't reserve screen space
     keyboardFocus: WlrKeyboardFocus.None   // Don't steal keyboard focus
 
-    // Position at top of screen, centered
+    // Position at top-right of screen
     anchors {
         top: true
+        right: true
     }
 
-    // Offset from screen edge (optimized for better screen usage)
+    // Offset from screen edge with right-side stacking
     margins {
-        top: 40  // Reduced from 50px for better space utilization
+        top: 44 + (popup.popupIndex * 124)
+        right: 8
     }
 
     // Explicit size - only as wide as the notification content
-    width: 350
+    implicitWidth: 350
     implicitHeight: notifContent.implicitHeight  // Adjust to content size
 
-    // Center horizontally on screen
+    color: "transparent"  // Background is handled by the Rectangle inside
+
     Component.onCompleted: {
-        x = (screen.width - width) / 2
+        NotificationCenterService.registerPopup(popupId)
     }
 
-    color: "transparent"  // Background is handled by the Rectangle inside
+    Component.onDestruction: {
+        NotificationCenterService.unregisterPopup(popupId)
+    }
 
     /**
      * Sound Player Process
@@ -106,9 +141,14 @@ WlrLayershell {
         implicitHeight: contentLayout.implicitHeight + 20  // Content height + padding (optimized)
 
         // Visual styling from Gruvbox theme
-        color: Colors.notificationBackground  // Dark background
-        radius: 10                             // Slightly more rounded for modern look
-        border.color: Colors.notificationBorder  // Subtle border
+        color: Colors.overlayDark
+        radius: 16
+        border.color: Qt.rgba(
+            Colors.notificationBorder.r,
+            Colors.notificationBorder.g,
+            Colors.notificationBorder.b,
+            0.9
+        )
         border.width: 1                        // Thinner border for cleaner look
 
         // Initial state for slide-in animation
@@ -235,6 +275,7 @@ WlrLayershell {
                 // Notification title
                 Text {
                     text: popup.notification.summary || "Notification"
+                    textFormat: Text.PlainText
                     font.bold: true
                     font.pixelSize: 15  // Slightly smaller for better proportions
                     font.family: "Cantarell"
@@ -256,6 +297,7 @@ WlrLayershell {
                  */
                 Text {
                     text: popup.notification.body
+                    textFormat: Text.RichText
                     color: Colors.fg2  // Dimmer than title
                     font.pixelSize: 14  // Increased for better readability
                     font.family: "Cantarell"
@@ -277,16 +319,18 @@ WlrLayershell {
                  * Each action invokes its callback and closes the notification.
                  */
                 RowLayout {
-                    visible: popup.notification.actions && popup.notification.actions.length > 0
+                    visible: popup.visibleActions.length > 0
                     Layout.topMargin: 4  // Reduced space above buttons
                     spacing: 6           // Tighter spacing between buttons
 
                     Repeater {
-                        model: popup.notification.actions
+                        model: popup.visibleActions
                         delegate: Rectangle {
                             // Modern button background with smooth hover/press states
-                            color: actionArea.pressed ? Colors.buttonActive : (actionArea.containsMouse ? Colors.buttonHover : Colors.buttonBackground)
-                            radius: 6  // More rounded for modern look
+                            color: actionArea.pressed
+                                ? Colors.buttonActive
+                                : (actionArea.containsMouse ? Colors.buttonHover : Colors.bg1)
+                            radius: 10
                             implicitHeight: 28  // Slightly shorter for compact design
                             implicitWidth: actionText.implicitWidth + 20  // Text width + reduced padding
                             Layout.preferredHeight: implicitHeight
@@ -313,8 +357,8 @@ WlrLayershell {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     modelData.invoke()  // Call the action callback
-                                    popup.notification.tracked = false
-                                    popup.destroy()  // Close notification after action
+                                    if (!popup.notification.resident && !popup.notification.tracked)
+                                        popup.notification.dismiss()
                                 }
                             }
 
@@ -341,8 +385,13 @@ WlrLayershell {
             z: -1  // Behind content so action buttons still work
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                popup.notification.tracked = false
-                popup.destroy()
+                if (popup.defaultAction) {
+                    popup.defaultAction.invoke()
+                    if (!popup.notification.resident && !popup.notification.tracked)
+                        popup.notification.dismiss()
+                } else {
+                    popup.notification.dismiss()
+                }
             }
         }
     }
@@ -357,11 +406,15 @@ WlrLayershell {
      * or by clicking an action button.
      */
     Timer {
-        interval: 5000  // 5 seconds in milliseconds
-        running: true   // Start immediately
+        interval: popup.resolvedTimeout
+        running: popup.resolvedTimeout > 0
         onTriggered: {
-            popup.notification.tracked = false  // Mark as closed
-            popup.destroy()  // Remove popup window
+            if (popup.notification.tracked) {
+                NotificationCenterService.hidePopupNotification(popup.historyId)
+                popup.destroy()
+            } else {
+                popup.notification.expire()
+            }
         }
     }
 }

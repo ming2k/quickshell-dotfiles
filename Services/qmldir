@@ -5,3 +5,5 @@ singleton PrivacyService 1.0 PrivacyService.qml
 singleton SummonService 1.0 SummonService.qml
 singleton SummonHistoryService 1.0 SummonHistoryService.qml
 singleton InhibitService 1.0 InhibitService.qml
+singleton NotificationCenterService 1.0 NotificationCenterService.qml
+singleton MprisService 1.0 MprisService.qml

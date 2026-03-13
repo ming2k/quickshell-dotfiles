@@ -47,6 +47,16 @@ ShellRoot {
         }
     }
 
+    Variants {
+        model: Quickshell.screens
+
+        HUDShade {
+            property var modelData
+            screen: modelData
+            screenName: modelData.name
+        }
+    }
+
     NotificationManager {}
 
     Variants {

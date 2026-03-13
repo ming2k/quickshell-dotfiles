@@ -20,6 +20,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
+import "../../Services"
 
 Item {
     /**
@@ -31,6 +32,13 @@ Item {
      */
     NotificationServer {
         id: server
+        actionsSupported: true
+        bodyMarkupSupported: true
+        bodyImagesSupported: false
+        bodyHyperlinksSupported: false
+        imageSupported: true
+        persistenceSupported: true
+        keepOnReload: true
 
         /**
          * Notification Handler
@@ -51,6 +59,11 @@ Item {
             console.log("  image:", notification.image)
             console.log("  appIcon:", notification.appIcon)
 
+            notification.tracked = !notification.transient
+
+            const historyId = NotificationCenterService.addNotification(notification)
+            const popupId = NotificationCenterService.allocatePopupId()
+
             // Dynamically load the NotificationPopup component
             const component = Qt.createComponent("NotificationPopup.qml")
 
@@ -58,6 +71,8 @@ Item {
                 // Create a new popup instance with the notification data
                 const popup = component.createObject(null, {
                     notification: notification,
+                    historyId: historyId,
+                    popupId: popupId,
                     screen: Quickshell.screens[0]  // Display on primary monitor
                 })
 
@@ -71,9 +86,12 @@ Item {
                  * - Auto-dismiss timer expires (5 seconds)
                  * - Application programmatically closes the notification
                  */
-                notification.onClosed.connect(() => {
-                    popup.destroy()
-                })
+                if (popup) {
+                    notification.onClosed.connect(() => {
+                        NotificationCenterService.closeNotification(historyId)
+                        popup.destroy()
+                    })
+                }
             } else {
                 // Log component creation errors for debugging
                 console.error("Failed to create notification popup:", component.errorString())

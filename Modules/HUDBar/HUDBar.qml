@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Wayland
 import "../../Common"
+import "../../Services"
 import "Widgets"
 
 Rectangle {
@@ -16,7 +16,6 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // Left: Workspaces & Window Title
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -40,13 +39,11 @@ Rectangle {
             }
         }
 
-        // Center: Clock
         Clock {
             Layout.alignment: Qt.AlignCenter
             barWindow: hudBar.window
         }
 
-        // Right: System status
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -81,8 +78,9 @@ Rectangle {
                     Layout.alignment: Qt.AlignVCenter
                 }
 
-                Inhibit {
+                NotificationBell {
                     Layout.alignment: Qt.AlignVCenter
+                    screenName: hudBar.screenName
                 }
             }
         }
