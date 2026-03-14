@@ -105,12 +105,12 @@ WlrLayershell {
                     radius: 10
                     color: closeMouse.containsMouse ? Colors.bg3 : Colors.bg1
 
-                    Text {
+                    Icon {
                         anchors.centerIn: parent
-                        text: "x"
-                        color: Colors.fg1
-                        font.pixelSize: 12
-                        font.family: "Cantarell"
+                        name: "window-close"
+                        fallback: "dialog-close"
+                        size: 16
+                        iconColor: closeMouse.containsMouse ? Colors.red : Colors.fg2
                     }
 
                     MouseArea {
@@ -201,8 +201,8 @@ WlrLayershell {
 
                 Rectangle {
                     visible: NotificationCenterService.items.length > 0
-                    implicitWidth: clearText.implicitWidth + 18
-                    implicitHeight: 30
+                    implicitWidth: clearText.implicitWidth + 16
+                    implicitHeight: 28
                     radius: 10
                     color: clearMouse.containsMouse ? Colors.bg3 : Colors.bg1
 
@@ -210,8 +210,8 @@ WlrLayershell {
                         id: clearText
                         anchors.centerIn: parent
                         text: "Clear"
-                        color: Colors.fg1
-                        font.pixelSize: 12
+                        color: clearMouse.containsMouse ? Colors.red : Colors.fg2
+                        font.pixelSize: 11
                         font.family: "Cantarell"
                     }
 
@@ -249,6 +249,19 @@ WlrLayershell {
                         color: modelData.isRead ? Colors.bg1 : Colors.bg0
                         border.width: 1
                         border.color: modelData.isRead ? Colors.bg2 : Colors.blue_dim
+
+                        HoverHandler {
+                            cursorShape: modelData.desktopEntry ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        }
+
+                        TapHandler {
+                            onTapped: {
+                                if (modelData.desktopEntry) {
+                                    NotificationCenterService.launchApp(modelData.desktopEntry)
+                                    NotificationCenterService.removeNotification(modelData.id)
+                                }
+                            }
+                        }
 
                         RowLayout {
                             anchors.fill: parent
@@ -384,12 +397,12 @@ WlrLayershell {
                                 radius: 8
                                 color: removeMouse.containsMouse ? Colors.bg3 : "transparent"
 
-                                Text {
+                                Icon {
                                     anchors.centerIn: parent
-                                    text: "x"
-                                    color: Colors.fg3
-                                    font.pixelSize: 11
-                                    font.family: "Cantarell"
+                                    name: "edit-delete"
+                                    fallback: "user-trash"
+                                    size: 14
+                                    iconColor: removeMouse.containsMouse ? Colors.red : Colors.fg3
                                 }
 
                                 MouseArea {
@@ -401,6 +414,7 @@ WlrLayershell {
                                 }
                             }
                         }
+
                     }
                 }
 

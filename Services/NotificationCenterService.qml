@@ -81,7 +81,8 @@ QtObject {
             image: entry.image,
             urgency: entry.urgency,
             timestamp: entry.timestamp,
-            isRead: entry.isRead
+            isRead: entry.isRead,
+            desktopEntry: entry.desktopEntry
         }
     }
 
@@ -96,6 +97,7 @@ QtObject {
             urgency: entry.urgency || 0,
             timestamp: entry.timestamp || Date.now(),
             isRead: entry.isRead !== false,
+            desktopEntry: entry.desktopEntry || "",
             isClosed: true,
             isTransient: false,
             notification: null,
@@ -130,6 +132,7 @@ QtObject {
             urgency: notification.urgency || 0,
             timestamp: Date.now(),
             isRead: centerVisible,
+            desktopEntry: notification.desktopEntry || "",
             isClosed: false,
             isTransient: !!notification.transient,
             notification: notification,
@@ -219,6 +222,27 @@ QtObject {
             notification: null,
             actions: []
         }))
+    }
+
+    function launchApp(desktopEntry) {
+        if (!desktopEntry)
+            return
+        // Try exact name first, then search for matching .desktop file
+        // Handles cases like desktopEntry="firefox" → "org.mozilla.firefox.desktop"
+        const script = `
+            entry="${desktopEntry}"
+            if gtk-launch "$entry" 2>/dev/null; then exit 0; fi
+            for dir in /usr/share/applications /usr/local/share/applications \
+                       "$HOME/.local/share/applications" \
+                       /var/lib/flatpak/exports/share/applications \
+                       "$HOME/.local/share/flatpak/exports/share/applications"; do
+                match=$(find "$dir" -maxdepth 1 -iname "*$entry*.desktop" 2>/dev/null | head -1)
+                if [ -n "$match" ]; then
+                    gtk-launch "$(basename "$match" .desktop)" 2>/dev/null && exit 0
+                fi
+            done
+        `
+        Quickshell.execDetached(["sh", "-c", script])
     }
 
     function notificationEntry(id) {

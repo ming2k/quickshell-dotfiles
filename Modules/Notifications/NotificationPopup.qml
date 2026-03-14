@@ -385,13 +385,18 @@ WlrLayershell {
             z: -1  // Behind content so action buttons still work
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                if (popup.defaultAction) {
+                const hasAction = !!popup.defaultAction
+                const hasDesktop = !hasAction && !!popup.notification.desktopEntry
+
+                if (hasAction)
                     popup.defaultAction.invoke()
-                    if (!popup.notification.resident && !popup.notification.tracked)
-                        popup.notification.dismiss()
-                } else {
-                    popup.notification.dismiss()
-                }
+                else if (hasDesktop)
+                    NotificationCenterService.launchApp(popup.notification.desktopEntry)
+
+                if (hasAction || hasDesktop)
+                    NotificationCenterService.removeNotification(popup.historyId)
+
+                popup.notification.dismiss()
             }
         }
     }

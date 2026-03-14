@@ -12,6 +12,22 @@ Rectangle {
     border.color: Colors.bg2
     implicitHeight: contentColumn.implicitHeight + 28
 
+    function resolvePlayerIcon() {
+        if (!MprisService.hasPlayers)
+            return "audio-headphones"
+        if (MprisService.desktopEntry)
+            return MprisService.desktopEntry
+
+        // Map dbus player name to desktop entry for known players
+        const name = MprisService.playerName.split(".")[0]
+        const map = {
+            "chromium": "com.google.Chrome",
+            "chrome": "com.google.Chrome",
+            "firefox": "org.mozilla.firefox",
+        }
+        return map[name] || name || "multimedia-player"
+    }
+
     ColumnLayout {
         id: contentColumn
         anchors.fill: parent
@@ -30,19 +46,20 @@ Rectangle {
                 clip: true
 
                 Image {
+                    id: artImage
                     anchors.fill: parent
                     source: MprisService.artUrl || ""
                     fillMode: Image.PreserveAspectCrop
-                    visible: MprisService.hasPlayers && !!MprisService.artUrl
+                    visible: status === Image.Ready
                     asynchronous: true
                     smooth: true
                 }
 
                 Icon {
                     anchors.centerIn: parent
-                    visible: !MprisService.hasPlayers || !MprisService.artUrl
-                    name: MprisService.desktopEntry || (MprisService.hasPlayers ? "audio-x-generic" : "media-playback-stop")
-                    fallback: "audio-x-generic"
+                    visible: !artImage.visible
+                    name: root.resolvePlayerIcon()
+                    fallback: "multimedia-player"
                     size: 26
                     iconColor: Colors.fg2
                 }
