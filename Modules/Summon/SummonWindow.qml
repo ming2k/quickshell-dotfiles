@@ -37,6 +37,15 @@ WlrLayershell {
         }
     }
 
+    Connections {
+        target: searchInput
+        function onActiveFocusChanged() {
+            if (!searchInput.activeFocus && SummonService.visible) {
+                SummonService.hide()
+            }
+        }
+    }
+
     layer: WlrLayershell.Overlay
     namespace: "quickshell:summon"
     exclusiveZone: -1
@@ -59,6 +68,29 @@ WlrLayershell {
 
     property int selectedIndex: 0
 
+    function fuzzyScore(query, text) {
+        const lower = text.toLowerCase()
+
+        // Exact substring match
+        if (lower.includes(query)) return 4
+
+        // Acronym match: "gimp" matches "Gnu Image Manipulation Program"
+        const words = lower.split(/\s+/)
+        if (query.length <= words.length) {
+            const initials = words.map(w => w[0]).join("")
+            if (initials.includes(query)) return 3
+        }
+
+        // Fuzzy subsequence match
+        let qi = 0
+        for (let i = 0; i < lower.length && qi < query.length; i++) {
+            if (lower[i] === query[qi]) qi++
+        }
+        if (qi === query.length) return 2
+
+        return 0
+    }
+
     property var filteredApplications: {
         const _history = SummonHistoryService.history  // force reactivity
 
@@ -75,13 +107,17 @@ WlrLayershell {
         })
 
         if (query !== "") {
-            apps = apps.filter(app =>
-                app.name.toLowerCase().includes(query) ||
-                (app.description && app.description.toLowerCase().includes(query))
-            )
+            let scored = apps.map(app => {
+                const nameScore = fuzzyScore(query, app.name)
+                const descScore = app.description ? fuzzyScore(query, app.description) : 0
+                return { app, score: Math.max(nameScore, descScore) }
+            }).filter(e => e.score > 0)
+
+            scored.sort((a, b) => b.score - a.score)
+            apps = scored.map(e => e.app)
         }
 
-        return SummonHistoryService.sortByFrecency(apps)
+        return query === "" ? SummonHistoryService.sortByFrecency(apps) : apps
     }
 
     function launchApplication(app) {
