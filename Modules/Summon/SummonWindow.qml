@@ -113,7 +113,11 @@ WlrLayershell {
                 return { app, score: Math.max(nameScore, descScore) }
             }).filter(e => e.score > 0)
 
-            scored.sort((a, b) => b.score - a.score)
+            scored.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score
+                return SummonHistoryService.getFrecency(SummonHistoryService.getAppId(b.app))
+                     - SummonHistoryService.getFrecency(SummonHistoryService.getAppId(a.app))
+            })
             apps = scored.map(e => e.app)
         }
 
