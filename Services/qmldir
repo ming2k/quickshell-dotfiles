@@ -7,3 +7,6 @@ singleton SummonHistoryService 1.0 SummonHistoryService.qml
 singleton InhibitService 1.0 InhibitService.qml
 singleton NotificationCenterService 1.0 NotificationCenterService.qml
 singleton MprisService 1.0 MprisService.qml
+singleton TypioService 1.0 TypioService.qml
+singleton PomodoroService 1.0 PomodoroService.qml
+singleton BatteryService 1.0 BatteryService.qml

@@ -8,7 +8,7 @@ Rectangle {
 
     required property string screenName
 
-    Layout.preferredHeight: 28
+    Layout.preferredHeight: 30
     Layout.preferredWidth: bellRow.implicitWidth + 18
     radius: 999
     color: NotificationCenterService.centerVisible && NotificationCenterService.activeScreenName === screenName
@@ -20,12 +20,12 @@ Rectangle {
     RowLayout {
         id: bellRow
         anchors.centerIn: parent
-        spacing: 6
+        spacing: Colors.hudIconSpacing
 
         Icon {
             name: "preferences-system-notifications"
             fallback: "dialog-information"
-            size: 16
+            size: Colors.hudIconSize
             iconColor: Colors.fg1
         }
 

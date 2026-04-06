@@ -140,11 +140,40 @@ QtObject {
         }
     }
 
+    function refresh() {
+        if (!networkChecker.running) {
+            networkChecker.running = true
+        }
+    }
+
     property var networkCheckTimer: Timer {
-        interval: 5000  // Check every 5 seconds (power saving)
+        interval: 30000
         running: true
         repeat: true
-        onTriggered: networkChecker.running = true
+        onTriggered: networkService.refresh()
+    }
+
+    property var networkMonitor: Process {
+        running: true
+        command: ["gdbus", "monitor", "--system", "--dest", "net.connman.iwd"]
+
+        stdout: SplitParser {
+            onRead: data => {
+                if (data.trim()) {
+                    networkService.refresh()
+                }
+            }
+        }
+
+        onExited: networkMonitorRestartTimer.restart()
+    }
+
+    property var networkMonitorRestartTimer: Timer {
+        id: networkMonitorRestartTimer
+        interval: 5000
+        running: false
+        repeat: false
+        onTriggered: networkMonitor.running = true
     }
 
     Component.onCompleted: {

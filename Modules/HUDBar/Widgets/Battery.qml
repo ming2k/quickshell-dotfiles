@@ -1,100 +1,46 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import "../../../Common"
+import "../../../Services"
 
-RowLayout {
-    spacing: Colors.hudIconSpacing
-    visible: hasBattery
+Item {
+    visible: BatteryService.hasBattery
+    Layout.preferredHeight: 30
+    Layout.preferredWidth: visible ? batteryLayout.implicitWidth : 0
 
-    property int batteryPercent: 0
-    property bool isCharging: false
-    property bool hasBattery: false
+    RowLayout {
+        id: batteryLayout
+        anchors.fill: parent
+        spacing: Colors.hudIconSpacing
 
-    Icon {
-        id: batteryIcon
-        size: Colors.hudIconSize
-        Layout.alignment: Qt.AlignVCenter
-        iconColor: battText.color
+        Icon {
+            size: Colors.hudIconSize
+            Layout.alignment: Qt.AlignVCenter
+            iconColor: battText.color
 
-        name: {
-            if (!hasBattery) return ""
-
-            // Round battery percentage to nearest 10
-            let roundedPercent = Math.floor(batteryPercent / 10) * 10
-            if (roundedPercent > 100) roundedPercent = 100
-
-            // Format as 3-digit string (e.g., 050, 080, 100)
-            let percentStr = roundedPercent.toString().padStart(3, '0')
-
-            if (isCharging) {
-                return `battery-${percentStr}-charging`
-            } else {
-                return `battery-${percentStr}`
+            name: {
+                const rounded = Math.min(Math.floor(BatteryService.percent / 10) * 10, 100)
+                const percentStr = rounded.toString().padStart(3, '0')
+                return BatteryService.isCharging
+                    ? `battery-${percentStr}-charging`
+                    : `battery-${percentStr}`
             }
         }
-    }
 
-    Text {
-        id: battText
-        Layout.alignment: Qt.AlignVCenter
-        font.pixelSize: 15
-        font.family: "Cantarell"
+        Text {
+            id: battText
+            Layout.alignment: Qt.AlignVCenter
+            font.pixelSize: 15
+            font.family: "Cantarell"
+            text: `${BatteryService.percent}%`
 
-        text: `${batteryPercent}%`
-
-        color: {
-            if (!hasBattery) return Colors.fg1
-            if (batteryPercent <= 15 && !isCharging) return Colors.red
-            if (batteryPercent <= 30 && !isCharging) return Colors.orange
-            if (isCharging) return Colors.aqua
-            return Colors.fg1
-        }
-    }
-
-    Process {
-        id: batteryChecker
-        running: true
-        command: ["sh", "-c", `
-            # Find battery
-            bat=$(ls /sys/class/power_supply/ | grep -i 'BAT' | head -1)
-            if [ -z "$bat" ]; then
-                echo "NONE"
-                exit 0
-            fi
-
-            # Read battery info
-            capacity=$(cat /sys/class/power_supply/$bat/capacity 2>/dev/null || echo "0")
-            status=$(cat /sys/class/power_supply/$bat/status 2>/dev/null || echo "Unknown")
-
-            echo "$capacity|$status"
-        `]
-
-        stdout: SplitParser {
-            onRead: data => {
-                let output = data.trim()
-                if (output === "NONE") {
-                    hasBattery = false
-                    return
-                }
-
-                let parts = output.split("|")
-                if (parts.length === 2) {
-                    hasBattery = true
-                    batteryPercent = parseInt(parts[0]) || 0
-                    // Only show charging if actually charging, not "Not charging" or "Full"
-                    let status = parts[1].toLowerCase()
-                    isCharging = status === "charging"
-                }
+            color: {
+                if (BatteryService.percent <= 15 && !BatteryService.isCharging) return Colors.red
+                if (BatteryService.percent <= 30 && !BatteryService.isCharging) return Colors.orange
+                if (BatteryService.isCharging) return Colors.aqua
+                return Colors.fg1
             }
         }
-    }
-
-    Timer {
-        interval: 30000  // Update every 30 seconds (power saving)
-        running: true
-        repeat: true
-        onTriggered: batteryChecker.running = true
     }
 }

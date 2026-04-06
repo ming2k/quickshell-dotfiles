@@ -60,6 +60,14 @@ Rectangle {
                     parentWindow: hudBar.window
                 }
 
+                TypioInputMethod {
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                Pomodoro {
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
                 Privacy {
                     Layout.alignment: Qt.AlignVCenter
                     Layout.leftMargin: 12

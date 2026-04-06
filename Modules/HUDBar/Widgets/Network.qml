@@ -10,7 +10,7 @@ Item {
 
     RowLayout {
         id: networkLayout
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.fill: parent
         spacing: Colors.hudIconSpacing
 
         Icon {

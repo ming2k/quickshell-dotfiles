@@ -87,7 +87,7 @@ QtObject {
     }
 
     property var volumeCheckTimer: Timer {
-        interval: 2000
+        interval: 5000
         running: true
         repeat: true
         onTriggered: volumeChecker.running = true

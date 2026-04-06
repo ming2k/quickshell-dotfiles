@@ -11,18 +11,12 @@ Rectangle {
 
     property var currentDate: new Date()
     property var tooltipWindow: null
-    property bool isHovering: false
     property var barWindow
 
-    Timer {
-        id: hoverDelayTimer
-        interval: 400
-        running: false
-        repeat: false
-        onTriggered: {
-            clock.isHovering = true
-            timeText.updateTime()
-            liveUpdateTimer.running = true
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        onEntered: {
             const component = Qt.createComponent("ClockTooltip.qml")
             if (component.status === Component.Ready) {
                 const pos = clock.mapToItem(null, 0, 0)
@@ -33,33 +27,9 @@ Rectangle {
                     clockWidth: clock.width,
                     screen: barWindow ? barWindow.screen : Quickshell.screens[0]
                 })
-            } else {
-                console.error("Failed to create clock tooltip:", component.errorString())
             }
         }
-    }
-
-    Timer {
-        id: liveUpdateTimer
-        interval: 1000
-        running: false
-        repeat: true
-        onTriggered: {
-            timeText.updateTime()
-        }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: {
-            hoverDelayTimer.restart()
-        }
         onExited: {
-            clock.isHovering = false
-            hoverDelayTimer.stop()
-            liveUpdateTimer.stop()
-            timeText.updateTime()
             if (tooltipWindow) {
                 tooltipWindow.destroy()
                 tooltipWindow = null
@@ -79,9 +49,7 @@ Rectangle {
 
         function updateTime() {
             currentDate = new Date()
-            text = clock.isHovering
-                ? Qt.formatDateTime(currentDate, "HH:mm:ss")
-                : Qt.formatDateTime(currentDate, "HH:mm")
+            text = Qt.formatDateTime(currentDate, "HH:mm")
         }
 
         Component.onCompleted: updateTime()

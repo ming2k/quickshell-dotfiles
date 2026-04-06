@@ -9,7 +9,7 @@ Rectangle {
 
     property bool compact: true
 
-    Layout.preferredHeight: compact ? 24 : 40
+    Layout.preferredHeight: compact ? 30 : 40
     Layout.preferredWidth: compact ? 28 : inhibitLayout.implicitWidth + 20
     Layout.alignment: Qt.AlignVCenter
     radius: compact ? 4 : 12
@@ -22,11 +22,12 @@ Rectangle {
         anchors.centerIn: parent
         spacing: compact ? 0 : 8
 
-        Text {
-            text: "\u2615"
-            font.pixelSize: 16
-            font.family: "Noto Sans"
-            color: InhibitService.isInhibited ? Colors.bg0 : Colors.fg1
+        Icon {
+            size: Colors.hudIconSize
+            Layout.alignment: Qt.AlignVCenter
+            iconColor: InhibitService.isInhibited ? Colors.bg0 : Colors.fg1
+            name: "caffeine"
+            fallback: "preferences-desktop-screensaver-symbolic"
         }
 
         Column {

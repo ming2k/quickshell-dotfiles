@@ -22,7 +22,7 @@ Item {
     RowLayout {
         id: privacyLayout
         anchors.fill: parent
-        spacing: 6
+        spacing: Colors.hudIconSpacing
 
         // Camera indicator
         Icon {
