@@ -2,7 +2,7 @@
 
 All services are QML singletons (`pragma Singleton`) — a single instance shared across all components.
 
-Services use a polling pattern: a `Process` runs a shell command, a `Timer` re-triggers it on an interval, and QML property bindings propagate state changes to the UI automatically.
+Services use a combination of strategies: event-driven D-Bus monitors (`gdbus monitor`) for low-latency updates with no overhead at rest, and periodic polling as a fallback. QML property bindings propagate state changes to the UI automatically.
 
 ```qml
 import "../Services"
@@ -13,7 +13,7 @@ Text { text: AudioService.volumeLevel + "%" }
 
 ## AudioService
 
-Controls and monitors system audio via `wpctl` (PipeWire/wireplumber).
+Controls and monitors system audio via `wpctl` (PipeWire/WirePlumber).
 
 **Properties:**
 | Property | Type | Description |
@@ -28,9 +28,24 @@ Controls and monitors system audio via `wpctl` (PipeWire/wireplumber).
 - `decreaseVolume()` — -2%
 - `setVolume(percentage)` — Set absolute volume
 
-**Poll interval:** 2 seconds
+**Poll interval:** 5 seconds
 
 **Note:** Uses `wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+` syntax (the `%+`/`%-` suffix form, not prefix).
+
+---
+
+## BatteryService
+
+Reads battery state from `/sys/class/power_supply/`.
+
+**Properties:**
+| Property | Type | Description |
+|----------|------|-------------|
+| `hasBattery` | bool | Whether a battery device was found |
+| `percent` | int | Current charge 0-100 |
+| `isCharging` | bool | True when status is `Charging` |
+
+**Poll interval:** 30 seconds
 
 ---
 
@@ -47,7 +62,10 @@ Monitors network connectivity — WiFi (iwd), Ethernet, and USB tethering.
 | `ipAddress` | string | Current IP address |
 | `iconName` | string | Dynamic icon |
 
-**Poll interval:** 5 seconds
+**Methods:**
+- `refresh()` — Re-query network state immediately
+
+**Strategy:** `gdbus monitor --system --dest net.connman.iwd` triggers an immediate refresh on any IWD state change; 30-second polling acts as fallback.
 
 **Signal strength formula:**
 ```
@@ -65,16 +83,16 @@ Monitors active camera, microphone, and screencast usage.
 | Property | Type | Description |
 |----------|------|-------------|
 | `cameraActive` | bool | `/dev/video*` in use |
-| `microphoneActive` | bool | Audio source outputs active |
+| `microphoneActive` | bool | PipeWire audio input stream active |
 | `screencastActive` | bool | PipeWire screen share active |
 | `anyActive` | bool | Any of the above |
 
-**Detection methods:**
+**Detection methods (single combined process):**
 - Camera: `fuser /dev/video*`
-- Microphone: `pactl list source-outputs`
-- Screencast: `pw-dump | jq` (PipeWire graph query)
+- Microphone: `pw-dump | jq` — `Stream/Input/Audio` nodes
+- Screencast: `pw-dump | jq` — `Video/Source` nodes with non-Camera role
 
-**Poll interval:** 5 seconds
+**Poll interval:** 10 seconds
 
 ---
 
@@ -100,7 +118,7 @@ Controls idle inhibition by starting/stopping `swayidle`.
 
 ## MprisService
 
-Media player integration via MPRIS D-Bus interface.
+Media player integration via Quickshell's built-in MPRIS support. Fully event-driven — no polling.
 
 **Properties:**
 | Property | Type | Description |
@@ -122,6 +140,66 @@ Media player integration via MPRIS D-Bus interface.
 - `selectPlayer(player)` — Choose specific player
 
 **Player selection priority:** preferred player > last active (playing) > any playing > last active > first available.
+
+---
+
+## TypioService
+
+Monitors the `org.typio.InputMethod1` session-bus service and exposes the active input engine for HUDBar.
+
+**Properties:**
+| Property | Type | Description |
+|----------|------|-------------|
+| `available` | bool | Whether Typio is reachable on the session bus |
+| `activeEngine` | string | Active keyboard engine id |
+| `displayName` | string | Human-readable engine name |
+| `iconName` | string | Engine icon name from `ActiveEngineState` |
+| `language` | string | Active engine language code |
+| `rimeSchema` | string | Current Rime schema id |
+| `modeClass` | string | Active mode class from `ActiveEngineMode` |
+| `modeId` | string | Active mode id from `ActiveEngineMode` |
+| `modeLabel` | string | Short active mode label shown in HUDBar |
+| `modeIconName` | string | Active mode icon name from `ActiveEngineMode` |
+| `statusText` | string | Label shown in HUDBar |
+
+**Methods:**
+- `refresh()` — Re-query Typio state immediately
+- `nextEngine()` — Call `org.typio.InputMethod1.NextEngine`
+
+**Strategy:** `gdbus monitor --session` on the Typio object triggers an immediate refresh on `PropertiesChanged` or engine changes; 5-second polling acts as fallback.
+
+---
+
+## PomodoroService
+
+Integrates with the [Pomodoro Timer](https://github.com/ming2k/pomodoro-timer) app via its D-Bus interface (`io.github.ming2k.PomodoroTimer`). The widget is hidden when the app is not running.
+
+**D-Bus details:**
+| Field | Value |
+|-------|-------|
+| Bus | Session |
+| Service | `io.github.ming2k.PomodoroTimer` |
+| Object path | `/io/github/ming2k/PomodoroTimer` |
+
+**Properties:**
+| Property | Type | Description |
+|----------|------|-------------|
+| `available` | bool | App is running and reachable |
+| `state` | string | `stopped`, `running`, `paused`, `completed` |
+| `sessionType` | string | `work`, `short_break`, `long_break` |
+| `timeRemaining` | int | Seconds remaining (decremented locally each second when running) |
+| `totalDuration` | int | Total seconds for current session |
+| `progressPercent` | real | Elapsed percentage 0.0–100.0 |
+| `sessionsCompleted` | int | Work sessions finished since app start |
+| `timeText` | string | `"MM:SS"` formatted time |
+| `sessionLabel` | string | `"Work"`, `"Break"`, or `"Long Break"` |
+
+**Methods:**
+- `toggleStartPause()` — Start if stopped/paused, pause if running
+- `skip()` — Skip to next session
+- `stop()` — Stop and reset current session
+
+**Strategy:** `gdbus monitor --session` on the Pomodoro object triggers a refresh on every `StateChanged` signal (fired on state transitions and once per minute while running). A local 1-second `Timer` decrements `timeRemaining` while running so the display stays smooth. 10-second polling acts as fallback.
 
 ---
 
@@ -159,8 +237,8 @@ Tracks app launch history and provides frecency-based sorting.
 
 **Frecency algorithm:**
 ```
-recencyScore  = exp(-age / 30 days) * 100     // exponential decay
-frequencyScore = min(count * 2, 100)           // capped
+recencyScore   = exp(-age / 30 days) * 100     // exponential decay
+frequencyScore = min(count * 2, 100)            // capped
 frecency = recency * 0.6 + frequency * 0.4
 ```
 

@@ -12,10 +12,13 @@ This configuration builds on the [Quickshell](https://quickshell.outfoxxed.me/) 
 shell.qml                      Entry point
 ├── Services/                   Singleton services (system state)
 │   ├── AudioService            Volume/mute via wpctl (PipeWire)
-│   ├── NetworkService          WiFi/Ethernet/USB via iwctl + ip
-│   ├── PrivacyService          Camera/mic/screencast monitoring
+│   ├── BatteryService          Battery level/charge via sysfs
+│   ├── NetworkService          WiFi/Ethernet/USB — IWD D-Bus monitor + iwctl
+│   ├── PrivacyService          Camera/mic/screencast via fuser + pw-dump
 │   ├── InhibitService          Idle inhibit (swayidle control)
-│   ├── MprisService            Media player integration (D-Bus)
+│   ├── MprisService            Media player integration (D-Bus, event-driven)
+│   ├── TypioService            Typio input method status + engine cycling
+│   ├── PomodoroService         Pomodoro Timer D-Bus integration
 │   ├── SummonService           App launcher visibility control
 │   ├── SummonHistoryService    Launch history + frecency sorting
 │   └── NotificationCenterService  Notification history + center
@@ -34,7 +37,7 @@ shell.qml                      Entry point
 ## Panel Layout (HUDBar)
 
 ```
-[Workspaces] [Window Title]  |  [Clock]  |  [SystemTray] [Privacy] [Audio] [Network] [Battery] [Bell]
+[Workspaces] [Window Title]  |  [Clock]  |  [SystemTray] [Typio] [Pomodoro] [Privacy] [Audio] [Network] [Battery] [Bell]
 ```
 
 ## Key Bindings
