@@ -48,27 +48,44 @@ Item {
                 return ["file://" + root.resolvedName]
 
             const homeDir = Quickshell.env("HOME") || "/home/ming"
+            const xdgDataDirs = (Quickshell.env("XDG_DATA_DIRS") || "/usr/local/share:/usr/share").split(":")
             let paths = []
 
             const themePath = Quickshell.iconPath(root.resolvedName)
             if (themePath) paths.push(themePath)
 
-            if (root.resolvedName.indexOf(".") !== -1) {
-                const flatpakDirs = [
-                    homeDir + "/.local/share/flatpak/exports/share/icons/hicolor",
-                    "/var/lib/flatpak/exports/share/icons/hicolor"
-                ]
-                const sizes = ["scalable/apps/" + root.resolvedName + ".svg", "128x128/apps/" + root.resolvedName + ".png", "64x64/apps/" + root.resolvedName + ".png"]
-                for (const dir of flatpakDirs)
-                    for (const s of sizes)
-                        paths.push("file://" + dir + "/" + s)
+            // Manual lookup for cases where Quickshell's icon theme cache isn't updated yet.
+            // This is common after installing new Flatpaks.
+            const searchDirs = [
+                ...xdgDataDirs.map(d => d + "/icons/hicolor"),
+                homeDir + "/.local/share/icons/hicolor",
+                "/var/lib/flatpak/exports/share/icons/hicolor",
+                homeDir + "/.local/share/flatpak/exports/share/icons/hicolor"
+            ]
+
+            const searchFiles = [
+                "scalable/apps/" + root.resolvedName + ".svg",
+                "128x128/apps/" + root.resolvedName + ".png",
+                "64x64/apps/" + root.resolvedName + ".png",
+                "48x48/apps/" + root.resolvedName + ".png",
+                "32x32/apps/" + root.resolvedName + ".png",
+                "scalable/apps/" + root.resolvedName + ".png"
+            ]
+
+            if (themePath) paths.push(themePath)
+
+            for (const dir of searchDirs) {
+                for (const file of searchFiles) {
+                    const fullPath = "file://" + dir + "/" + file
+                    if (paths.indexOf(fullPath) === -1) {
+                        paths.push(fullPath)
+                    }
+                }
             }
 
             paths.push(
-                "file://" + homeDir + "/.local/share/icons/hicolor/scalable/apps/" + root.resolvedName + ".svg",
                 "file:///usr/share/pixmaps/" + root.resolvedName + ".png",
-                "file:///usr/share/pixmaps/" + root.resolvedName + ".svg",
-                "file:///usr/share/icons/hicolor/scalable/apps/" + root.resolvedName + ".svg"
+                "file:///usr/share/pixmaps/" + root.resolvedName + ".svg"
             )
 
             if (root.fallback) {
