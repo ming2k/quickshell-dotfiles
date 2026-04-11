@@ -9,6 +9,7 @@ WlrLayershell {
     id: summon
 
     property bool isFocusedScreen: false
+    property int applicationsRevision: 0
 
     visible: SummonService.visible && isFocusedScreen && !hideDelayTimer.running
 
@@ -43,6 +44,14 @@ WlrLayershell {
             if (!searchInput.activeFocus && SummonService.visible) {
                 SummonService.hide()
             }
+        }
+    }
+
+    Connections {
+        target: DesktopEntries
+        function onApplicationsChanged() {
+            applicationsRevision++
+            selectedIndex = 0
         }
     }
 
@@ -93,6 +102,7 @@ WlrLayershell {
 
     property var filteredApplications: {
         const _history = SummonHistoryService.history  // force reactivity
+        const _applicationsRevision = applicationsRevision
 
         const query = searchInput.text.toLowerCase()
 
@@ -109,8 +119,9 @@ WlrLayershell {
         if (query !== "") {
             let scored = apps.map(app => {
                 const nameScore = fuzzyScore(query, app.name)
-                const descScore = app.description ? fuzzyScore(query, app.description) : 0
-                return { app, score: Math.max(nameScore, descScore) }
+                const commentScore = app.comment ? fuzzyScore(query, app.comment) : 0
+                const genericNameScore = app.genericName ? fuzzyScore(query, app.genericName) : 0
+                return { app, score: Math.max(nameScore, commentScore, genericNameScore) }
             }).filter(e => e.score > 0)
 
             scored.sort((a, b) => {
@@ -128,7 +139,7 @@ WlrLayershell {
         searchInput.focus = false
         SummonHistoryService.recordLaunch(SummonHistoryService.getAppId(app))
 
-        Quickshell.execDetached(app.command)
+        app.execute()
         SummonService.hide()
     }
 
@@ -251,7 +262,7 @@ WlrLayershell {
                                 }
 
                                 Text {
-                                    text: modelData.description || ""
+                                    text: modelData.comment || modelData.genericName || ""
                                     color: Colors.gray
                                     font.pixelSize: 11
                                     font.family: "Cantarell"

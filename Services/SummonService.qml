@@ -97,12 +97,19 @@ QtObject {
             "2>/dev/null | awk '{print $6}'"
         ]
 
-        stdout: SplitParser {
-            onRead: data => {
-                const currentState = data.trim()
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const currentState = text
+                    .trim()
+                    .split(/\s+/)
+                    .filter(value => value.length > 0)
+                    .sort()
+                    .join("\n")
+
                 if (service._lastFlatpakState !== "" && service._lastFlatpakState !== currentState) {
-                    Quickshell.reload()
+                    Quickshell.reload(false)
                 }
+
                 service._lastFlatpakState = currentState
             }
         }
