@@ -241,7 +241,8 @@ WlrLayershell {
                             spacing: 10
 
                             Icon {
-                                name: modelData.icon || "application-x-executable"
+                                name: modelData.icon || ""
+                                fallbackText: modelData.name
                                 size: 28
                                 anchors.verticalCenter: parent.verticalCenter
                             }

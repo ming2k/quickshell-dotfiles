@@ -16,7 +16,7 @@ Displays workspace indicators for the current monitor. Each workspace shows its 
 
 ## WindowTitle
 
-Shows the title of the currently focused window, truncated to 300px max width with ellipsis.
+Shows the icon and title of the currently focused window. The icon is resolved via `Icon.qml` using the application's `app_id`. The title is truncated to 300px max width with ellipsis.
 
 **Update interval:** 500ms (polls `niri msg -j windows`)
 

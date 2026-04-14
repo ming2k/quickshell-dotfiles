@@ -1,28 +1,23 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import "../Services"
 
 Item {
     id: root
 
     property string name: ""
     property string fallback: ""
+    property string fallbackText: name
     property int size: 16
-    property color iconColor: "white"  // placeholder - Image doesn't support colorization
+    property color iconColor: "white"
 
     width: size
     height: size
     implicitWidth: size
     implicitHeight: size
 
-    property string resolvedName: {
-        switch (root.name) {
-        case "yazi":
-            return "utilities-terminal"
-        default:
-            return root.name
-        }
-    }
+    property string resolvedName: IconService.resolveName(root.name)
 
     Image {
         id: img
@@ -41,6 +36,7 @@ Item {
         property var _candidatePaths: {
             if (!root.resolvedName) return []
 
+            // Direct paths
             if (root.resolvedName.startsWith("image:") || root.resolvedName.startsWith("file:") || root.resolvedName.startsWith("qrc:"))
                 return [root.resolvedName]
 
@@ -51,11 +47,11 @@ Item {
             const xdgDataDirs = (Quickshell.env("XDG_DATA_DIRS") || "/usr/local/share:/usr/share").split(":")
             let paths = []
 
+            // 1. Theme lookup (High Priority)
             const themePath = Quickshell.iconPath(root.resolvedName)
             if (themePath) paths.push(themePath)
 
-            // Manual lookup for cases where Quickshell's icon theme cache isn't updated yet.
-            // This is common after installing new Flatpaks.
+            // 2. Manual lookup (Medium Priority - handles stale cache / Flatpaks)
             const searchDirs = [
                 ...xdgDataDirs.map(d => d + "/icons/hicolor"),
                 homeDir + "/.local/share/icons/hicolor",
@@ -72,8 +68,6 @@ Item {
                 "scalable/apps/" + root.resolvedName + ".png"
             ]
 
-            if (themePath) paths.push(themePath)
-
             for (const dir of searchDirs) {
                 for (const file of searchFiles) {
                     const fullPath = "file://" + dir + "/" + file
@@ -83,18 +77,21 @@ Item {
                 }
             }
 
+            // 3. System pixmaps (Low Priority)
             paths.push(
                 "file:///usr/share/pixmaps/" + root.resolvedName + ".png",
                 "file:///usr/share/pixmaps/" + root.resolvedName + ".svg"
             )
 
+            // 4. Fallback chain
             if (root.fallback) {
                 const fallbackPath = Quickshell.iconPath(root.fallback)
                 if (fallbackPath) paths.push(fallbackPath)
             }
 
-            const defaultPath = Quickshell.iconPath("application-x-executable")
-            if (defaultPath) paths.push(defaultPath)
+            // Purposely removed 'application-x-executable' default fallback
+            // to avoid loading ugly system placeholders (e.g. black/magenta textures).
+            // We rely on the beautiful monogram fallback instead.
 
             return paths
         }
@@ -116,19 +113,24 @@ Item {
     // Monogram fallback: shown when all image candidates are exhausted
     Rectangle {
         anchors.fill: parent
-        visible: img.status === Image.Error && img._tryIndex >= img._candidatePaths.length - 1
+        // Visible if no candidates at all OR if we tried everything and it's not Ready/Loading
+        visible: img._candidatePaths.length === 0 || (img.status !== Image.Ready && img.status !== Image.Loading && img._tryIndex >= img._candidatePaths.length - 1)
         radius: root.size * 0.2
         color: {
-            if (!root.name) return "#555"
-            const h = (root.name.charCodeAt(0) * 37 + root.name.charCodeAt(1) * 17) % 360
+            const textToHash = root.fallbackText || "Unknown"
+            const h = (textToHash.charCodeAt(0) * 37 + (textToHash.length > 1 ? textToHash.charCodeAt(1) * 17 : 0)) % 360
             return Qt.hsla(h / 360, 0.5, 0.38, 1)
         }
 
         Text {
             anchors.centerIn: parent
-            text: root.name ? root.name.charAt(0).toUpperCase() : "?"
+            text: {
+                if (!root.fallbackText) return "?"
+                const match = root.fallbackText.match(/[a-zA-Z0-9\u4e00-\u9fa5]/)
+                return match ? match[0].toUpperCase() : root.fallbackText.charAt(0).toUpperCase()
+            }
             color: "white"
-            font.pixelSize: root.size * 0.5
+            font.pixelSize: root.size * 0.6
             font.bold: true
         }
     }

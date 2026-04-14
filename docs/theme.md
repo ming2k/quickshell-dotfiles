@@ -73,14 +73,16 @@ Text { color: Colors.fg1 }
 
 ## Icon Component
 
-`Common/Icon.qml` loads icons with a multi-level fallback chain:
+`Common/Icon.qml` loads icons with a multi-level fallback chain, managed by `IconService`.
 
-1. Theme icon via `Quickshell.iconPath()`
-2. Flatpak icon directories
-3. `~/.local/share/icons/`
-4. System pixmaps and icon dirs
-5. Specified fallback icon
-6. Default application icon
-7. Monogram (first letter on HSL-hashed color background)
+### Resolution Priority
+
+1. **Overrides**: Checks `IconService.overrides` for name mapping (e.g., `foot` → `terminal`).
+2. **Theme**: System icon theme lookup via `Quickshell.iconPath()`.
+3. **Manual Lookup**: Direct filesystem search in `hicolor` directories, including Flatpak exports.
+4. **System Pixmaps**: Checks `/usr/share/pixmaps`.
+5. **Fallback**: User-specified `fallback` property.
+6. **Default**: `application-x-executable` icon.
+7. **Monogram**: First letter of the name on an HSL-hashed color background.
 
 **Properties:** `name`, `fallback`, `size` (default 16), `iconColor`

@@ -203,6 +203,21 @@ Integrates with the [Pomodoro Timer](https://github.com/ming2k/pomodoro-timer) a
 
 ---
 
+## IconService
+
+Provides centralized icon name resolution and override management for `Icon.qml`. This service manages the mapping between application identifiers and the icon names found in system themes.
+
+**Properties:**
+| Property | Type | Description |
+|----------|------|-------------|
+| `overrides` | object | Map of app names to preferred icon names |
+| `searchPriority` | list | List of search categories in order: `theme` > `manual` > `fallback` > `default` > `monogram` |
+
+**Methods:**
+- `resolveName(name)` — Returns the overridden icon name or the original name if no override exists.
+
+---
+
 ## SummonService
 
 Controls the application launcher window visibility.

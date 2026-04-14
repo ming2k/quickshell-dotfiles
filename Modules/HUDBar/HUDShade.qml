@@ -296,8 +296,8 @@ WlrLayershell {
                                 Icon {
                                     anchors.centerIn: parent
                                     visible: !notificationImage.visible
-                                    name: modelData.appIcon || "dialog-information"
-                                    fallback: "dialog-information"
+                                    name: modelData.appIcon || ""
+                                    fallbackText: modelData.appName || "Notification"
                                     size: 18
                                     iconColor: modelData.urgency >= 2 ? Colors.red : Colors.accent
                                 }

@@ -18,14 +18,7 @@ Rectangle {
         if (MprisService.desktopEntry)
             return MprisService.desktopEntry
 
-        // Map dbus player name to desktop entry for known players
-        const name = MprisService.playerName.split(".")[0]
-        const map = {
-            "chromium": "com.google.Chrome",
-            "chrome": "com.google.Chrome",
-            "firefox": "org.mozilla.firefox",
-        }
-        return map[name] || name || "multimedia-player"
+        return MprisService.playerName.split(".")[0] || ""
     }
 
     ColumnLayout {
@@ -59,7 +52,7 @@ Rectangle {
                     anchors.centerIn: parent
                     visible: !artImage.visible
                     name: root.resolvePlayerIcon()
-                    fallback: "multimedia-player"
+                    fallbackText: MprisService.identity || MprisService.playerName || "Media"
                     size: 26
                     iconColor: Colors.fg2
                 }

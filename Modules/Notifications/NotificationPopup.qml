@@ -253,9 +253,10 @@ WlrLayershell {
                 name: {
                     const appIcon = popup.notification.appIcon || ""
                     if (appIcon.startsWith("file://") || appIcon.startsWith("/"))
-                        return "dialog-information"
-                    return appIcon || "dialog-information"
+                        return ""
+                    return appIcon
                 }
+                fallbackText: popup.notification.appName || "Notification"
                 size: 24
                 Layout.alignment: Qt.AlignTop
                 Layout.topMargin: 2
