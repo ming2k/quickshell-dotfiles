@@ -17,7 +17,6 @@ Item {
         Icon {
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: battText.color
 
             name: {
                 const rounded = Math.min(Math.floor(BatteryService.percent / 10) * 10, 100)

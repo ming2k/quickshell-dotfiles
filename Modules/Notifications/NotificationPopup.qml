@@ -260,7 +260,6 @@ WlrLayershell {
                 size: 24
                 Layout.alignment: Qt.AlignTop
                 Layout.topMargin: 2
-                iconColor: Colors.accent
             }
 
             /**

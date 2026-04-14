@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import Qt5Compat.GraphicalEffects
 import "../Services"
 
 Item {
@@ -10,7 +11,7 @@ Item {
     property string fallback: ""
     property string fallbackText: name
     property int size: 16
-    property color iconColor: "white"
+    property color iconColor: "transparent"
 
     width: size
     height: size
@@ -18,6 +19,9 @@ Item {
     implicitHeight: size
 
     property string resolvedName: IconService.resolveName(root.name)
+    
+    // Using alpha channel for robust transparency check
+    property bool colorize: root.iconColor.a > 0.001
 
     Image {
         id: img
@@ -29,7 +33,12 @@ Item {
         mipmap: true
         fillMode: Image.PreserveAspectFit
         smooth: true
-        visible: status === Image.Ready || status === Image.Loading
+        
+        // Only enable the colorization layer if a non-transparent color is provided
+        layer.enabled: root.colorize && (status === Image.Ready || status === Image.Loading)
+        layer.effect: ColorOverlay {
+            color: root.iconColor
+        }
 
         property int _tryIndex: 0
 
@@ -88,10 +97,6 @@ Item {
                 const fallbackPath = Quickshell.iconPath(root.fallback)
                 if (fallbackPath) paths.push(fallbackPath)
             }
-
-            // Purposely removed 'application-x-executable' default fallback
-            // to avoid loading ugly system placeholders (e.g. black/magenta textures).
-            // We rely on the beautiful monogram fallback instead.
 
             return paths
         }

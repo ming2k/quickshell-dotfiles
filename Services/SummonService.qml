@@ -8,7 +8,7 @@ QtObject {
     id: service
 
     property bool visible: false
-    property string focusedOutput: ""
+    property string focusedOutput: NiriService.focusedOutput
     property bool showPending: false
 
     // FIFO IPC watcher - reads commands (toggle/show/hide) from named pipe.
@@ -29,42 +29,20 @@ QtObject {
         }
     }
 
-    property Process focusedOutputQuery: Process {
-        running: true
-        command: ["sh", "-c", "niri msg -j workspaces"]
-
-        stdout: SplitParser {
-            onRead: data => {
-                try {
-                    let ws = JSON.parse(data.trim())
-                    let focused = ws.find(w => w.is_focused)
-                    if (focused) service.focusedOutput = focused.output
-                    if (service.showPending) {
-                        service.visible = true
-                        service.showPending = false
-                    }
-                } catch (e) {}
-            }
+    onFocusedOutputChanged: {
+        if (showPending && focusedOutput) {
+            visible = true
+            showPending = false
         }
-    }
-
-    property Timer focusedOutputTimer: Timer {
-        interval: 500
-        running: true
-        repeat: true
-        onTriggered: focusedOutputQuery.running = true
     }
 
     function requestShow() {
         if (focusedOutput) {
             visible = true
             showPending = false
-            focusedOutputQuery.running = true
             return
         }
-
         showPending = true
-        focusedOutputQuery.running = true
     }
 
     function toggle() {
@@ -115,8 +93,9 @@ QtObject {
         }
     }
 
+    // Polling for Flatpaks reduced from 10s to 30s as it's not a critical high-frequency task
     property Timer flatpakPollTimer: Timer {
-        interval: 10000 // Poll every 10 seconds
+        interval: 30000 // Poll every 30 seconds
         running: true
         repeat: true
         onTriggered: flatpakPoller.running = true

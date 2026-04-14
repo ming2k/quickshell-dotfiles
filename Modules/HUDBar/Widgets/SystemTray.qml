@@ -30,7 +30,6 @@ RowLayout {
                 name: modelData.icon || ""
                 fallback: "application-x-executable"
                 size: Colors.trayIconSize
-                iconColor: Colors.fg1
             }
 
             // Menu anchor for right-click context menu

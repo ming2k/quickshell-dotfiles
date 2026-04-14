@@ -11,3 +11,4 @@ singleton TypioService 1.0 TypioService.qml
 singleton PomodoroService 1.0 PomodoroService.qml
 singleton BatteryService 1.0 BatteryService.qml
 singleton IconService 1.0 IconService.qml
+singleton NiriService 1.0 NiriService.qml

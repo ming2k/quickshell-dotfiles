@@ -54,7 +54,6 @@ Rectangle {
                     name: root.resolvePlayerIcon()
                     fallbackText: MprisService.identity || MprisService.playerName || "Media"
                     size: 26
-                    iconColor: Colors.fg2
                 }
             }
 

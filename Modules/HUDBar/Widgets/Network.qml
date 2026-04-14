@@ -17,10 +17,8 @@ Item {
             id: networkIcon
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: NetworkService.connectionType === "disconnected" ? Colors.orange : Colors.fg1
             name: NetworkService.iconName
         }
-
         Text {
             id: netText
             Layout.alignment: Qt.AlignVCenter

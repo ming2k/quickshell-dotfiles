@@ -19,7 +19,6 @@ Item {
         Icon {
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: PomodoroService.state === "paused" ? Colors.fg4 : Colors.fg1
             name: "timer-symbolic"
             fallback: "appointment-soon-symbolic"
         }

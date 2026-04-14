@@ -2,15 +2,31 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import "../../../Services"
 
 RowLayout {
     id: workspaces
     spacing: 0
 
     property string screenName: ""
-    property int activeWorkspace: -1
-    property int focusedWorkspace: -1
-    property var activeWorkspaces: []
+
+    // Bind state directly to NiriService to avoid polling
+    property var activeWorkspaces: {
+        let mine = NiriService.workspaces.filter(ws => ws.output === workspaces.screenName)
+        return mine.map(ws => ws.idx).sort((a, b) => a - b)
+    }
+
+    property int activeWorkspace: {
+        let mine = NiriService.workspaces.filter(ws => ws.output === workspaces.screenName)
+        let active = mine.find(ws => ws.is_active)
+        return active ? active.idx : -1
+    }
+
+    property int focusedWorkspace: {
+        let mine = NiriService.workspaces.filter(ws => ws.output === workspaces.screenName)
+        let focused = mine.find(ws => ws.is_focused)
+        return focused ? focused.idx : -1
+    }
 
     Loader {
         id: switcherLoader
@@ -71,38 +87,4 @@ RowLayout {
             }
         }
     }
-
-    Process {
-        id: workspaceQuery
-        running: true
-        command: ["sh", "-c", "niri msg -j workspaces"]
-
-        stdout: SplitParser {
-            onRead: data => {
-                let output = data.trim()
-                try {
-                    let allWs = JSON.parse(output)
-                    let mine = allWs.filter(ws => ws.output === workspaces.screenName)
-                    let indices = mine.map(ws => ws.idx).sort((a, b) => a - b)
-
-                    let active = mine.find(ws => ws.is_active)
-                    let focused = mine.find(ws => ws.is_focused)
-
-                    workspaces.activeWorkspaces = indices
-                    workspaces.activeWorkspace = active ? active.idx : -1
-                    workspaces.focusedWorkspace = focused ? focused.idx : -1
-                } catch (e) {
-                    console.log("Failed to parse workspace data:", e)
-                }
-            }
-        }
-    }
-
-    Timer {
-        interval: 250
-        running: true
-        repeat: true
-        onTriggered: workspaceQuery.running = true
-    }
-
 }

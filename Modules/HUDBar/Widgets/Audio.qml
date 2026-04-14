@@ -28,10 +28,8 @@ Item {
             id: audioIcon
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: Colors.fg1
             name: AudioService.iconName
         }
-
         Text {
             id: audioText
             Layout.alignment: Qt.AlignVCenter

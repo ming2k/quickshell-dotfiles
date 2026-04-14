@@ -56,6 +56,10 @@ QtObject {
     readonly property color error: red
     readonly property color info: blue
 
+    // Semantic - Privacy Indicators (Restrained UI)
+    // Unified to a subdued icon color (gray) to separate icons from typographic text weight.
+    readonly property color privacyIndicator: gray
+
     // Component-specific
     readonly property color barBackground: bg0
     readonly property color barAccent: blue

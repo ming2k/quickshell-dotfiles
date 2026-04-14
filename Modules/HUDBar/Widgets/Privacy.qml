@@ -29,9 +29,8 @@ Item {
             visible: PrivacyService.cameraActive
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: Colors.orange
-            name: "camera-web-symbolic"
-            fallback: "camera-video-symbolic"
+            name: "file://" + Quickshell.env("HOME") + "/.config/quickshell/Common/Icons/privacy-camera.svg"
+            iconColor: Colors.privacyIndicator
         }
 
         // Microphone indicator
@@ -39,9 +38,8 @@ Item {
             visible: PrivacyService.microphoneActive
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: Colors.orange
-            name: "microphone-sensitivity-high-symbolic"
-            fallback: "audio-input-microphone-symbolic"
+            name: "file://" + Quickshell.env("HOME") + "/.config/quickshell/Common/Icons/privacy-mic.svg"
+            iconColor: Colors.privacyIndicator
         }
 
         // Screencast indicator
@@ -49,9 +47,8 @@ Item {
             visible: PrivacyService.screencastActive
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: Colors.orange
-            name: "screen-shared-symbolic"
-            fallback: "video-display"
+            name: "file://" + Quickshell.env("HOME") + "/.config/quickshell/Common/Icons/privacy-screen.svg"
+            iconColor: Colors.privacyIndicator
         }
     }
 }

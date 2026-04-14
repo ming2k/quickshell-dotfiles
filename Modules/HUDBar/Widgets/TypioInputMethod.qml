@@ -19,7 +19,6 @@ Item {
         Icon {
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: Colors.fg1
             name: TypioService.modeIconName || TypioService.iconName
             fallback: "input-keyboard-symbolic"
         }

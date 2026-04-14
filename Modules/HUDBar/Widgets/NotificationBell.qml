@@ -26,7 +26,6 @@ Rectangle {
             name: "preferences-system-notifications"
             fallback: "dialog-information"
             size: Colors.hudIconSize
-            iconColor: Colors.fg1
         }
 
         Text {

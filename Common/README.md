@@ -46,7 +46,7 @@ Icon {
 - `name` (string): Icon name or file path
 - `fallback` (string): Fallback icon if primary fails (default: "")
 - `size` (int): Icon size in pixels (default: 16)
-- `iconColor` (color): Placeholder property for compatibility (not currently used)
+- `iconColor` (color): Applies a color overlay to the icon (useful for symbolic icons like `-symbolic`). Defaults to `transparent` (renders the original SVG/PNG colors).
 
 ### Icon Theme Configuration
 

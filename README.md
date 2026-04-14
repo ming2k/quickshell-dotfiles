@@ -61,7 +61,8 @@ shell.qml                      Entry point
 
 ## Documentation
 
-- [Services](services.md) - System services reference
-- [Widgets](widgets.md) - Panel widget reference
-- [Theme](theme.md) - Colors and styling
-- [Environment](environment.md) - System requirements and configuration
+- [Design System (QDS)](docs/design-system.md) - UI principles and semantic color guidelines
+- [Services](docs/services.md) - System services reference
+- [Widgets](docs/widgets.md) - Panel widget reference
+- [Theme](docs/theme.md) - Colors and styling
+- [Environment](docs/environment.md) - System requirements and configuration

@@ -299,7 +299,6 @@ WlrLayershell {
                                     name: modelData.appIcon || ""
                                     fallbackText: modelData.appName || "Notification"
                                     size: 18
-                                    iconColor: modelData.urgency >= 2 ? Colors.red : Colors.accent
                                 }
                             }
 

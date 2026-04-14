@@ -25,7 +25,6 @@ Rectangle {
         Icon {
             size: Colors.hudIconSize
             Layout.alignment: Qt.AlignVCenter
-            iconColor: InhibitService.isInhibited ? Colors.bg0 : Colors.fg1
             name: "caffeine"
             fallback: "preferences-desktop-screensaver-symbolic"
         }
